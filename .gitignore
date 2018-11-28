@@ -2,3 +2,15 @@
 *.asc
 *.bin
 *.blif
+
+*.out
+*.hi
+*.o
+*.vcd
+
+# Generated verilog files
+counter.v
+spi.v
+verilog
+
+
