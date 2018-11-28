@@ -13,7 +13,7 @@ module top (
 
     SPIReader reader
         ( .clk(CLK)
-        , .rst(0)
+        , .rst(1'b0)
         , .spi_clk(PIN_1)
         , .mosi(PIN_2)
         , .data(spi_read_byte)
