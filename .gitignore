@@ -10,7 +10,10 @@
 
 # Generated verilog files
 counter.v
-spi.v
+SPIReader.v
+SPIReader.manifest
 verilog
+Spi_newData.v
+Spi_nextStep.v
 
 
