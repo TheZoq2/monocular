@@ -6,9 +6,7 @@ import Clash.Explicit.Testbench
 
 
 data Step
-    = Start
-    | ClkRising
-    | ClkUp
+    = ClkUp
     | ClkDown
     deriving Show
 
@@ -16,64 +14,65 @@ data Step
 data State = State
     { step :: Step
     , d :: Signed 8
+    , bitsReceived :: Int
     }
 
 
 initialState :: State
 initialState = State
-    { step = Start
+    { step = ClkDown
     , d = 0
+    , bitsReceived = 0
     }
 
-
-updateStep :: Step -> State -> State
-updateStep newStep State {d=d} =
-    State newStep d
 
 
 
 nextStep :: State -> (Bit, Bit) -> Step
 nextStep State {step=step} (clk, input) =
     case step of
-        Start ->
-            case clk of
-                1 -> ClkRising
-                _ -> Start
         ClkDown ->
             case clk of
-                1 -> ClkRising
-                _ -> Start
-        ClkRising ->
-                ClkUp
+                1 -> ClkUp
+                _ -> ClkDown
         ClkUp ->
             case clk of
-                1 -> ClkDown
-                _ -> ClkUp
+                1 -> ClkUp
+                0 -> ClkDown
 
 
-newData :: State -> (Bit, Bit) -> Signed 8
-newData State {step=step, d=d} (clk, input) =
-    case step of
-        ClkRising ->
-            shift d 1 + fromInteger (toInteger input)
-        _ ->
-            d
+updateStateData :: State -> (Bit, Bit) -> State
+updateStateData state (clk, input) =
+    let
+        State {step=step, d=d, bitsReceived=bitsReceived} = state
+        newBitsReceived = 
+            if bitsReceived == 8 then
+                    0
+                else
+                    bitsReceived
+    in
+        case step of
+            ClkDown ->
+                if clk == 1 then
+                    state { d = shift d 1 + fromInteger (toInteger input)
+                          , bitsReceived = bitsReceived + 1
+                          }
+                else
+                    state {bitsReceived = newBitsReceived}
+            _ ->
+                state {bitsReceived = newBitsReceived}
 
 
 
 output :: State -> (Bit, Bit) -> (Signed 8, Bit)
-output State {step=step, d=d} (clk, input) =
-    case step of
-        ClkRising ->
-            (d, high)
-        _ ->
-            (d, low)
+output State {step=step, d=d, bitsReceived=bitsReceived} (clk, input) =
+    (d, if bitsReceived == 8 then 1 else 0)
 
 
 
 spiT :: State -> (Bit, Bit) -> (State, (Signed 8, Bit))
 spiT state input =
-    ( State {step = nextStep state input, d = newData state input}
+    ( (updateStateData state input) {step = nextStep state input}
     , output state input
     )
 
