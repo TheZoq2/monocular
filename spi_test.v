@@ -1,3 +1,4 @@
+/*
 module spi_tb();
     reg clk;
     reg rst;
@@ -94,6 +95,71 @@ module spi_tb();
 
         #10
 
+        // Bit0
+        mosi = 1;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //Bit1
+        #3
+        mosi = 1;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 2
+        #3
+        mosi = 1;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 3
+        #3
+        mosi = 1;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 4
+        #3
+        mosi = 0;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 5
+        #3
+        mosi = 0;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 6
+        #3
+        mosi = 0;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        //bit 7
+        #3
+        mosi = 0;
+        #1
+        spi_clk = 1;
+        #4
+        spi_clk = 0;
+
+        #10
+
         $finish();
     end
 
@@ -106,3 +172,4 @@ module spi_tb();
         , .received(newData)
         );
 endmodule
+*/
