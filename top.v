@@ -1,3 +1,4 @@
+/*
 // look in pins.pcf for all the pin names on the TinyFPGA BX board
 module top (
     input CLK,    // 16MHz clock
@@ -55,3 +56,6 @@ module top (
     assign PIN_12 = spi_read_byte[1];
     assign PIN_11 = spi_read_byte[0];
 endmodule
+
+
+*/
