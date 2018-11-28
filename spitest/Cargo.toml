@@ -1,0 +1,11 @@
+[package]
+name = "spitest"
+version = "0.1.0"
+authors = ["TheZoq2 <frans.skarman@gmail.com>"]
+
+[dependencies]
+stm32f103xx-hal = {git = "https://github.com/japaric/stm32f103xx-hal"}
+cortex-m = "0.5.2"
+cortex-m-semihosting = "0.3.0"
+panic-semihosting = "0.4.0"
+cortex-m-rt = "0.6.3"
