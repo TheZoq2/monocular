@@ -11,9 +11,17 @@ data Step
     deriving Show
 
 
+data Input = Input
+    { clk :: Bit
+    , mosi :: Bit
+    , toOutput :: Signed 8
+    }
+
 data State = State
     { step :: Step
-    , d :: Signed 8
+    , dataIn :: Signed 8
+    , dataOut :: Signed 8
+    , outBuffer :: Signed 8
     , bitsReceived :: Int
     }
 
@@ -21,15 +29,20 @@ data State = State
 initialState :: State
 initialState = State
     { step = ClkDown
-    , d = 0
+    , dataIn = 0
+    , dataOut = 0
+    , outBuffer = 0
     , bitsReceived = 0
     }
 
 
 
 
-nextStep :: State -> (Bit, Bit) -> Step
-nextStep State {step=step} (clk, input) =
+{-
+  Calculates the next step from the current input
+-}
+nextStep :: State -> Input -> Step
+nextStep State {step=step} (Input clk input toOutput) =
     case step of
         ClkDown ->
             case clk of
@@ -41,11 +54,14 @@ nextStep State {step=step} (clk, input) =
                 0 -> ClkDown
 
 
-updateStateData :: State -> (Bit, Bit) -> State
-updateStateData state (clk, input) =
+{-
+  Updates the input data from the current state
+-}
+updateStateData :: State -> Input -> State
+updateStateData state (Input clk input toOutput) =
     let
-        State {step=step, d=d, bitsReceived=bitsReceived} = state
-        newBitsReceived = 
+        State {step=step, dataIn=dataIn, bitsReceived=bitsReceived} = state
+        newBitsReceived =
             if bitsReceived == 8 then
                     0
                 else
@@ -54,7 +70,7 @@ updateStateData state (clk, input) =
         case step of
             ClkDown ->
                 if clk == 1 then
-                    state { d = shift d 1 + fromInteger (toInteger input)
+                    state { dataIn = shift dataIn 1 + fromInteger (toInteger input)
                           , bitsReceived = bitsReceived + 1
                           }
                 else
@@ -64,14 +80,17 @@ updateStateData state (clk, input) =
 
 
 
-output :: State -> (Bit, Bit) -> (Signed 8, Bit)
-output State {step=step, d=d, bitsReceived=bitsReceived} (clk, input) =
-    (d, if bitsReceived == 8 then 1 else 0)
+output :: State -> Input -> (Signed 8, Bit)
+output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived} (Input clk input toOutput) =
+    (dataIn, if bitsReceived == 8 then 1 else 0)
 
 
 
-spiT :: State -> (Bit, Bit) -> (State, (Signed 8, Bit))
-spiT state input =
+spiT :: State -> (Bit, Bit, Signed 8) -> (State, (Signed 8, Bit))
+spiT state (clk, mosi, toOutput) =
+    let
+        input = Input clk mosi toOutput
+    in
     ( (updateStateData state input) {step = nextStep state input}
     , output state input
     )
@@ -96,7 +115,7 @@ spi =
 topEntity
   :: Clock System Source
   -> Reset System Asynchronous
-  -> Signal System (Bit, Bit)
+  -> Signal System (Bit, Bit, Signed 8)
   -> Signal System (Signed 8, Bit)
 topEntity = exposeClockReset spi
 
