@@ -3,12 +3,14 @@ module spi_tb();
     reg rst;
     reg spi_clk;
     reg mosi;
+    reg [7:0] output_data;
+    wire miso;
     wire received;
     wire [7:0] spi_out;
 
     initial begin
         $dumpfile("spi_tb.vcd");
-        $dumpvars(0, clk, rst, spi_clk, mosi, spi_out, newData);
+        $dumpvars(0, clk, rst, spi_clk, mosi, spi_out, newData, output_data, miso);
         clk = 0;
         mosi = 0;
         spi_clk = 0;
@@ -19,6 +21,7 @@ module spi_tb();
     end
 
     initial begin
+        output_data = 'b11111111;
         rst = 1;
         #2
         rst = 0;
@@ -61,6 +64,8 @@ module spi_tb();
         , .rst(rst)
         , .spi_clk(spi_clk)
         , .mosi(mosi)
+        , .miso(miso)
+        , .toOutput(output_data)
         , .data(spi_out)
         , .received(newData)
         );

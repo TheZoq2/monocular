@@ -8,22 +8,22 @@ import Clash.Explicit.Testbench
 data Step
     = ClkUp
     | ClkDown
-    deriving Show
+    deriving (Show, Eq)
 
 
 data Input = Input
     { clk :: Bit
     , mosi :: Bit
-    , toOutput :: Signed 8
+    , toOutput :: Unsigned 8
     }
 
 data State = State
     { step :: Step
-    , dataIn :: Signed 8
-    , dataOut :: Signed 8
-    , outBuffer :: Signed 8
+    , dataIn :: Unsigned 8
+    , dataOut :: Unsigned 8
+    , outBuffer :: Unsigned 8
     , bitsReceived :: Int
-    }
+    } deriving Show
 
 
 initialState :: State
@@ -79,14 +79,29 @@ updateStateData state (Input clk input toOutput) =
                 state {bitsReceived = newBitsReceived}
 
 
+updateStateOutput :: State -> Input -> State
+updateStateOutput state (Input clk input toOutput) =
+    let
+        newDataOut =
+            if bitsReceived state == 0 then
+                outBuffer state
+            else
+                if step state == ClkDown && clk == 1 then
+                    shift (dataOut state) 1
+                else
+                    dataOut state
+    in
+        state {dataOut=newDataOut, outBuffer=toOutput}
 
-output :: State -> Input -> (Signed 8, Bit)
-output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived} (Input clk input toOutput) =
-    (dataIn, if bitsReceived == 8 then 1 else 0)
+
+
+output :: State -> Input -> (Unsigned 8, Bit, Bit)
+output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived, dataOut=dataOut} (Input clk input toOutput) =
+    (dataIn, if bitsReceived == 8 then 1 else 0, lsb dataOut)
 
 
 
-spiT :: State -> (Bit, Bit, Signed 8) -> (State, (Signed 8, Bit))
+spiT :: State -> (Bit, Bit, Unsigned 8) -> (State, (Unsigned 8, Bit, Bit))
 spiT state (clk, mosi, toOutput) =
     let
         input = Input clk mosi toOutput
@@ -108,15 +123,23 @@ spi =
     { t_name   = "SPIReader"
     , t_inputs = [ PortName "clk"
                  , PortName "rst"
-                 , PortProduct "" [PortName "spi_clk", PortName "mosi"]
+                 , PortProduct ""
+                    [ PortName "spi_clk"
+                    , PortName "mosi"
+                    , PortName "toOutput"
+                    ]
                  ]
-    , t_output = PortProduct "" [PortName "data", PortName "received"]
+    , t_output = PortProduct "" 
+        [ PortName "data"
+        , PortName "received"
+        , PortName "miso"
+        ]
     }) #-}
 topEntity
   :: Clock System Source
   -> Reset System Asynchronous
-  -> Signal System (Bit, Bit, Signed 8)
-  -> Signal System (Signed 8, Bit)
+  -> Signal System (Bit, Bit, Unsigned 8)
+  -> Signal System (Unsigned 8, Bit, Bit)
 topEntity = exposeClockReset spi
 
 
