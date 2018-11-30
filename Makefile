@@ -5,7 +5,7 @@ APIO_FILES=apio.ini pins.pcf
 sim:
 	@make build_hs
 	@echo ""
-	@iverilog -o spi_tb.out -D VCD_OUTPUT=spi_tb.vcd $(wildcard verilog/Spi/SPIReader/*.v) ${TB}
+	@iverilog -o spi_tb.out -D VCD_OUTPUT=spi_tb.vcd verilog/Spi/SPIReader/*.v ${TB}
 	@echo ""
 	@vvp spi_tb.out
 
