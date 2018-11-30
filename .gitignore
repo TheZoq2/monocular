@@ -8,12 +8,7 @@
 *.o
 *.vcd
 
-# Generated verilog files
-counter.v
-SPIReader.v
-SPIReader.manifest
+# generated verilog files
 verilog
-Spi_newData.v
-Spi_nextStep.v
-
-
+build
+output
