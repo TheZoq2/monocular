@@ -1,5 +1,7 @@
 MAIN=top.v
 APIO_FILES=apio.ini pins.pcf
+BUILD_DIR=build
+APIO_BUILD_DIR=apio_build
 
 
 hs_files := $(wildcard *.hs)
@@ -20,7 +22,7 @@ build_hs: $(hs_targets)
 
 
 verilog/%/built: %.hs
-	stack exec -- clash --verilog $<
+	@stack exec -- clash --verilog $<
 	@touch $@
 
 
@@ -36,14 +38,15 @@ output/%.vcd: test/%.v
 
 build: build_hs
 	@mkdir -p build
-	@cp ${MAIN} ${verilogs} ${APIO_FILES} build
-	@apio build -p build
+	@cp ${MAIN} ${verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
+	@apio build -p ${APIO_BUILD_DIR}
 
 upload: build
-	@apio upload -p build
+	@apio upload -p ${APIO_BUILD_DIR}
 
 clean:
-	rm verilog -r
-	rm output -r
-	rm bin -r
-	rm build -r
+	rm verilog -rf
+	rm output -rf
+	rm bin -rf
+	rm ${APIO_BUILD_DIR} -rf
+	rm ${BUILD_DIR} -rf
