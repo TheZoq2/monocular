@@ -22,7 +22,7 @@ data State = State
     , dataIn :: Unsigned 8
     , dataOut :: Unsigned 8
     , outBuffer :: Unsigned 8
-    , bitsReceived :: Int
+    , bitsReceived :: Unsigned 8
     } deriving Show
 
 
@@ -30,7 +30,7 @@ initialState :: State
 initialState = State
     { step = ClkDown
     , dataIn = 0
-    , dataOut = 0
+    , dataOut = 0b10101011
     , outBuffer = 0
     , bitsReceived = 0
     }
@@ -79,25 +79,26 @@ updateStateData state (Input clk input toOutput) =
                 state {bitsReceived = newBitsReceived}
 
 
-updateStateOutput :: State -> Input -> State
-updateStateOutput state (Input clk input toOutput) =
+updateStateOutput :: Input -> State -> State
+updateStateOutput (Input clk input toOutput) state =
     let
+        State {step=step, bitsReceived=bitsReceived, dataOut=dataOut} = state
         newDataOut =
-            if bitsReceived state == 0 then
+            if bitsReceived == 0 then
                 outBuffer state
             else
-                if step state == ClkDown && clk == 1 then
-                    shift (dataOut state) 1
+                if step == ClkUp && clk == 0 then
+                    rotateR dataOut (1)
                 else
-                    dataOut state
+                    dataOut
     in
         state {dataOut=newDataOut, outBuffer=toOutput}
 
 
 
-output :: State -> Input -> (Unsigned 8, Bit, Bit)
-output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived, dataOut=dataOut} (Input clk input toOutput) =
-    (dataIn, if bitsReceived == 8 then 1 else 0, lsb dataOut)
+output :: State -> (Unsigned 8, Bit, Bit)
+output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived, dataOut=dataOut} =
+    (dataIn, if bitsReceived == 8 then 1 else 0, lsb (dataOut :: Unsigned 8))
 
 
 
@@ -105,10 +106,13 @@ spiT :: State -> (Bit, Bit, Unsigned 8) -> (State, (Unsigned 8, Bit, Bit))
 spiT state (clk, mosi, toOutput) =
     let
         input = Input clk mosi toOutput
+
+        newState =
+            (updateStateData (updateStateOutput input state) input) {step = nextStep state input}
     in
-    ( (updateStateData state input) {step = nextStep state input}
-    , output state input
-    )
+        ( newState
+        , output newState
+        )
 
 
 -- maskedCounter :: HiddenClockReset domain gated synchronous =>

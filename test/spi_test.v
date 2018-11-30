@@ -21,7 +21,7 @@ module spi_tb();
     end
 
     initial begin
-        output_data = 'b11111111;
+        output_data = 'b10101011;
         rst = 1;
         #2
         rst = 0;
@@ -36,6 +36,7 @@ module spi_tb();
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
+        output_data = 'b00001010;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
 
