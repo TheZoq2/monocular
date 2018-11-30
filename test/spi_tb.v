@@ -9,8 +9,8 @@ module spi_tb();
     wire [7:0] spi_out;
 
     initial begin
-        $dumpfile("spi_tb.vcd");
-        $dumpvars(0, clk, rst, spi_clk, mosi, spi_out, newData, output_data, miso);
+        $dumpfile(`VCD_OUTPUT);
+        $dumpvars(0, spi_tb);
         clk = 0;
         mosi = 0;
         spi_clk = 0;
