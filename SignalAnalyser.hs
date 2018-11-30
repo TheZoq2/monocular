@@ -4,7 +4,6 @@ import Clash.Prelude
 import Clash.Explicit.Testbench
 
 
-
 data State a = State
     { time :: Unsigned 32
     , d :: a
@@ -60,7 +59,7 @@ signalAnalyser =
                     ]
                  ]
     , t_output = PortProduct "" 
-        [ PortName "time"
+        [ PortName "currentTime"
         , PortName "dataOut"
         , PortName "newData"
         ]

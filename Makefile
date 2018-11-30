@@ -46,3 +46,4 @@ clean:
 	rm verilog -r
 	rm output -r
 	rm bin -r
+	rm build -r
