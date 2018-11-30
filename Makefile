@@ -2,6 +2,7 @@ MAIN=top.v
 APIO_FILES=apio.ini pins.pcf
 BUILD_DIR=build
 APIO_BUILD_DIR=apio_build
+HDL = $(wildcard hdl/*.v)
 
 
 hs_files := $(wildcard *.hs)
@@ -28,11 +29,11 @@ verilog/%/built: %.hs
 
 sim: build_hs $(vcds)
 
-output/%.vcd: test/%.v
+output/%.vcd: test/%.v hdl/*.v
 	@mkdir -p bin
 	@mkdir -p output
 	@echo "Building ${<F}"
-	@iverilog -o bin/${<F}.out -DVCD_OUTPUT=\"$@\" $< ${verilogs}
+	@iverilog -o bin/${<F}.out -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"$@\" ${HDL} $< ${verilogs}
 	@vvp bin/${<F}.out
 
 

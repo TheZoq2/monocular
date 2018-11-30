@@ -40,7 +40,7 @@ module spi_tb();
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
 
-
+        `ASSERT(spi_out == 'b11001011);
 
 
         #10
@@ -55,9 +55,11 @@ module spi_tb();
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
 
+        `ASSERT(spi_out == 'b11110001);
+
         #10
 
-        $finish();
+        `END_TEST
     end
 
     SPIReader reader
