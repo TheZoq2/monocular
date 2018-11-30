@@ -9,7 +9,7 @@ hs_files := $(wildcard *.hs)
 hs_targets := $(patsubst %.hs, verilog/%/built, $(wildcard *.hs))
 
 test_files := $(wildcard test/*.v)
-vcds := $(patsubst test/%.v, output/%.vcd, ${test_files})
+vcds := $(patsubst test/%.v, %.vcd, ${test_files})
 
 
 .SECONDEXPANSION:
@@ -29,12 +29,11 @@ verilog/%/built: %.hs
 
 sim: build_hs $(vcds)
 
-output/%.vcd: test/%.v hdl/*.v
+%.vcd: test/%.v hdl/*.v
 	@mkdir -p bin
 	@mkdir -p output
-	@echo "Building ${<F}"
-	@iverilog -o bin/${<F}.out -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"$@\" ${HDL} $< ${verilogs}
-	@vvp bin/${<F}.out
+	@iverilog -o bin/${<F}.out -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.out\" ${HDL} $< ${verilogs}
+	@vvp bin/${<F}.out | grep -v dumpfile
 
 
 build: build_hs
@@ -51,3 +50,8 @@ clean:
 	rm bin -rf
 	rm ${APIO_BUILD_DIR} -rf
 	rm ${BUILD_DIR} -rf
+
+
+iverilog_commandfile: build_hs
+	@echo -e $(patsubst %, '-l %\n', ${HDL} ${verilogs}) > .verilog_config
+
