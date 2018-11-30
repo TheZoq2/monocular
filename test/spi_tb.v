@@ -1,4 +1,5 @@
 module spi_tb();
+    `SETUP_TEST
     reg clk;
     reg rst;
     reg spi_clk;
@@ -40,7 +41,7 @@ module spi_tb();
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
 
-        `ASSERT(spi_out == 'b11001011);
+        `ASSERT_EQ(spi_out, 'b11001011);
 
 
         #10
@@ -55,7 +56,7 @@ module spi_tb();
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
 
-        `ASSERT(spi_out == 'b11110001);
+        `ASSERT_EQ(spi_out, 'b11110000);
 
         #10
 

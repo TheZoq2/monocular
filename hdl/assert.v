@@ -2,5 +2,23 @@
 // RED \033[0;31m
 // GREEN \033[0;32m
 
-`define ASSERT(test) if(!(test)) begin $display("[\033[0;31m%m\033[0m] Assertion failed <test>"); $finish(-1); end
-`define END_TEST $display("[\033[0;32m%m\033[0m] : All tests passed"); $finish();
+`define SETUP_TEST reg __failed = 0;
+
+
+`define ASSERTION_ERROR $write("[\033[0;31m%m\033[0m] Assertion failed: ");
+
+
+`define ASSERT_EQ(expr, cond) \
+    if ((expr === cond) == 0) begin \
+        __failed = 1; \
+        `ASSERTION_ERROR; \
+        $display("%h /= %h", expr, cond); \
+    end
+        // `ASSERTION_ERROR \
+        // ASSERTION_ERROR($write(" /= cond")) \
+
+`define END_TEST \
+    if(__failed == 0) begin \
+        $display("[\033[0;32m%m\033[0m] : All tests passed"); \
+    end \
+    $finish();
