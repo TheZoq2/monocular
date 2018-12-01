@@ -23,6 +23,7 @@ build_hs: $(hs_targets)
 
 
 verilog/%/built: %.hs
+	@echo -e "[\033[0;34mclash\033[0m] Building $<"
 	@stack exec -- clash --verilog $<
 	@touch $@
 
