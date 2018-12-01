@@ -5,7 +5,14 @@
 `define SETUP_TEST reg __failed = 0;
 
 
-`define ASSERTION_ERROR $write("[\033[0;31m%m\033[0m] Assertion failed: ");
+// `define ASSERTION_ERROR $write("[\033[0;31m%s\033[0m: %d] Assertion failed: ", `__FILE__, `__LINE__);
+`define ASSERTION_ERROR $write("["); \
+    $write("\033[0;31m"); \ // Red
+    $write("%m"); \ // Filename
+    $write("\033[0m"); \ // Reset colour
+    $write(": %0d", `__LINE__); \ // : <line number>
+    $write("]"); \
+    $write("Assertion failed: ");
 
 
 `define ASSERT_EQ(expr, cond) \
