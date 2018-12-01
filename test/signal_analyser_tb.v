@@ -3,14 +3,16 @@ module signal_analyser_tb();
     reg clk;
     reg rst;
     reg [7:0] d;
-    wire [32:0] t;
+    wire [31:0] t;
     wire [7:0] dOut;
+    wire newData;
 
 
     initial begin
         $dumpfile(`VCD_OUTPUT);
         $dumpvars(0, signal_analyser_tb);
         clk = 0;
+        d = 0;
         #1;
         forever begin
             #1 clk = ~clk;
@@ -18,24 +20,48 @@ module signal_analyser_tb();
     end
 
     initial begin
+        // Reset signal
         rst = 1;
         #2
         rst = 0;
 
+        // Set data just after reset
         d = 69;
-        #1
+        // Wait for one clock cycle and verify that the time and data are
+        // correct
+        #2
         `ASSERT_EQ(t, 0)
         `ASSERT_EQ(dOut, 69)
+        `ASSERT_EQ(newData, 1)
 
-        # 5;
+        // Verify that the time and data hasn't changed
+        #2;
+        `ASSERT_EQ(t, 0)
+        `ASSERT_EQ(dOut, 69)
+        `ASSERT_EQ(newData, 0)
+
+        // Set new data, verify that it is updated
+        #2;
         d = 100;
-        #1;
-        `ASSERT_EQ(t, 5)
+        #2;
+        `ASSERT_EQ(t, 3)
         `ASSERT_EQ(dOut, 100)
+        `ASSERT_EQ(newData, 1)
+        #2;
+        `ASSERT_EQ(newData, 0)
 
-        
 
+        #3;
 
         `END_TEST
     end
+
+    signal_analyser analyser (
+        .clk(clk),
+        .rst(rst),
+        .dataIn(d),
+        .dataTime(t),
+        .dataOut(dOut),
+        .newData(newData)
+    );
 endmodule
