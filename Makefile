@@ -38,7 +38,7 @@ sim: build_hs $(vcds)
 
 
 build: build_hs
-	@mkdir -p build
+	@mkdir -p ${APIO_BUILD_DIR}
 	@cp ${MAIN} ${verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
 	@apio build -p ${APIO_BUILD_DIR}
 
