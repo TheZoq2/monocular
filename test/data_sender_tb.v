@@ -58,7 +58,7 @@ module data_sender_tb();
         transmissionStart = 1;
         #2;
         transmissionStart = 0;
-        signal_to_send = 'h1234123412;
+        signal_to_send = 'h123456789a;
         #2;
         `ASSERT_EQ(byte_to_send, 'h55);
            transmissionDone = 1; #2 transmissionDone = 0;
@@ -77,16 +77,19 @@ module data_sender_tb();
 
         // Ensure that the new data is sent now that transmission start is low
         #2;
-        `ASSERT_EQ(byte_to_send, 'h12);
+        `ASSERT_EQ(byte_to_send, 'h9a);
            transmissionDone = 1; #2 transmissionDone = 0;
-        `ASSERT_EQ(byte_to_send, 'h34);
+        `ASSERT_EQ(byte_to_send, 'h78);
         #2 transmissionDone = 1; #2 transmissionDone = 0;
-        `ASSERT_EQ(byte_to_send, 'h12);
+        `ASSERT_EQ(byte_to_send, 'h56);
         #2 transmissionDone = 1; #2 transmissionDone = 0;
         `ASSERT_EQ(byte_to_send, 'h34);
         #2 transmissionDone = 1; #2 transmissionDone = 0;
         `ASSERT_EQ(byte_to_send, 'h12);
 
+
+
+        #10
 
         `END_TEST
     end
