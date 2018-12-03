@@ -88,7 +88,7 @@ updateStateOutput (Input clk input toOutput) state =
                 outBuffer state
             else
                 if step == ClkUp && clk == 0 then
-                    rotateR dataOut (1)
+                    rotateL dataOut (1)
                 else
                     dataOut
     in
@@ -98,7 +98,7 @@ updateStateOutput (Input clk input toOutput) state =
 
 output :: State -> (Unsigned 8, Bit, Bit)
 output State {step=step, dataIn=dataIn, bitsReceived=bitsReceived, dataOut=dataOut} =
-    (dataIn, if bitsReceived == 8 then 1 else 0, lsb (dataOut :: Unsigned 8))
+    (dataIn, if bitsReceived == 8 then 1 else 0, msb (dataOut :: Unsigned 8))
 
 
 

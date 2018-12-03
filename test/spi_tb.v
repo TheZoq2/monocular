@@ -64,8 +64,14 @@ module spi_tb();
 
         output_data = 'b11010010;
 
-        # 2
+        # 4
 
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
         `ASSERT_EQ(miso, 0);
         spi_clk = 1; # 4
         spi_clk = 0; # 4
@@ -82,12 +88,6 @@ module spi_tb();
         spi_clk = 1; # 4
         spi_clk = 0; # 4
         `ASSERT_EQ(miso, 0);
-        spi_clk = 1; # 4
-        spi_clk = 0; # 4
-        `ASSERT_EQ(miso, 1);
-        spi_clk = 1; # 4
-        spi_clk = 0; # 4
-        `ASSERT_EQ(miso, 1);
 
 
 
