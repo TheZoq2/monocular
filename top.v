@@ -3,9 +3,9 @@ module top (
     input CLK,    // 16MHz clock
     output LED,   // User/boot LED next to power LED
     output USBPU,  // USB pull-up resistor
+    output PIN_3,
     input PIN_1,
     input PIN_2,
-    input PIN_3,
     input PIN_4
 );
     wire [7:0] spi_read_byte;
@@ -16,8 +16,10 @@ module top (
         , .rst(1'b0)
         , .spi_clk(PIN_1)
         , .mosi(PIN_2)
+        , .miso(PIN_3)
         , .data(spi_read_byte)
         , .received(new_spi_byte)
+        , .toOutput(123)
         );
 
     // drive USB pull-up resistor to '0' to disable USB

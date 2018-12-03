@@ -60,6 +60,39 @@ module spi_tb();
 
         #10
 
+        rst = 1; #2 rst = 0;
+
+        output_data = 'b11010010;
+
+        # 2
+
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+
+
+
+        # 10
+
         `END_TEST
     end
 
