@@ -16,7 +16,6 @@ vcds := $(patsubst test/%.v, output/%.v.vcd, ${test_files})
 verilogs=$(shell find verilog -name '*.v')
 outfiles := $(patsubst test/%.v, bin/%.v.out, ${test_files})
 
-.FORCE:$(vcds)
 .SECONDARY: $(outfiles)
 
 ring_kompilatorn: sim
