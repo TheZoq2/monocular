@@ -9,13 +9,15 @@ hs_files := $(wildcard *.hs)
 hs_targets := $(patsubst %.hs, verilog/%/built, $(wildcard *.hs))
 
 test_files := $(wildcard test/*.v)
-vcds := $(patsubst test/%.v, %.vcd, ${test_files})
+vcds := $(patsubst test/%.v, output/%.v.vcd, ${test_files})
 
 
 .SECONDEXPANSION:
 verilogs=$(shell find verilog -name '*.v')
+outfiles := $(patsubst test/%.v, bin/%.v.out, ${test_files})
 
-
+.FORCE:$(vcds)
+.SECONDARY: $(outfiles)
 
 ring_kompilatorn: sim
 
@@ -30,19 +32,26 @@ verilog/%/built: %.hs
 
 sim: build_hs $(vcds)
 
-%.vcd: test/%.v hdl/*.v
-	@mkdir -p bin
+output/%.v.vcd: bin/%.v.out hdl/*.v FORCE
 	@mkdir -p output
-	@iverilog -o bin/${<F}.out -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.out\" ${HDL} $< ${verilogs}
-	@vvp bin/${<F}.out | grep -v dumpfile
+	@echo -e "[\033[0;34mvvp\033[0m] simulating $<"
+	@vvp $< | grep -v dumpfile
+
+
+bin/%.v.out: test/%.v hdl/assert.v
+	@echo -e "[\033[0;34miverilog\033[0m] building $@"
+	@mkdir -p bin
+	@iverilog -o ${@} -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.vcd\" ${HDL} $< ${verilogs}
 
 
 build: build_hs
 	@mkdir -p ${APIO_BUILD_DIR}
 	@cp ${MAIN} ${verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
+	@echo -e "[\033[0;34mapio\033[0m] building"
 	@apio build -p ${APIO_BUILD_DIR}
 
 upload: build
+	@echo -e "[\033[0;34mapio\033[0m] uploading"
 	@apio upload -p ${APIO_BUILD_DIR}
 
 clean:
@@ -52,6 +61,8 @@ clean:
 	rm ${APIO_BUILD_DIR} -rf
 	rm ${BUILD_DIR} -rf
 
+
+FORCE:
 
 iverilog_commandfile: build_hs
 	@echo -e $(patsubst %, '-l %\n', ${HDL} ${verilogs}) > .verilog_config
