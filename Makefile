@@ -31,13 +31,13 @@ verilog/%/built: %.hs
 
 sim: build_hs $(vcds)
 
-output/%.v.vcd: bin/%.v.out hdl/*.v FORCE
+output/%.v.vcd: bin/%.v.out $(HDL) FORCE
 	@mkdir -p output
 	@echo -e "[\033[0;34mvvp\033[0m] simulating $<"
 	@vvp $< | grep -v dumpfile
 
 
-bin/%.v.out: test/%.v hdl/assert.v
+bin/%.v.out: test/%.v $(HDL) $(hs_targets)
 	@echo -e "[\033[0;34miverilog\033[0m] building $@"
 	@mkdir -p bin
 	@iverilog -o ${@} -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.vcd\" ${HDL} $< ${verilogs}
