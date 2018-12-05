@@ -8,6 +8,7 @@ module spi_tb();
     wire miso;
     wire received;
     wire [7:0] spi_out;
+    wire transmission_started;
 
     initial begin
         $dumpfile(`VCD_OUTPUT);
@@ -30,9 +31,12 @@ module spi_tb();
 
         #10
 
+        `ASSERT_EQ(transmission_started, 0)
         // Bit0
            mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
+        `ASSERT_EQ(transmission_started, 1)
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
+        `ASSERT_EQ(transmission_started, 0)
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
@@ -102,7 +106,7 @@ module spi_tb();
         , .spi_clk(spi_clk)
         , .mosi(mosi)
         , .miso(miso)
-        , .toOutput(output_data)
+        , .to_output(output_data)
         , .data(spi_out)
         , .received(newData)
         );

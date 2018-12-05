@@ -130,7 +130,7 @@ spi =
                  , PortProduct ""
                     [ PortName "spi_clk"
                     , PortName "mosi"
-                    , PortName "toOutput"
+                    , PortName "to_output"
                     ]
                  ]
     , t_output = PortProduct "" 

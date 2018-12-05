@@ -13,6 +13,7 @@ module main_tb();
         clk = 0;
         mosi = 0;
         spi_clk = 0;
+        pin_values = 0;
         #1;
         forever begin
             #1 clk = ~clk;
@@ -65,6 +66,7 @@ module main_tb();
         ( .clk(clk)
         , .rst(rst)
         , .spi_clk(spi_clk)
+        , .to_output(spi_tx_data)
         , .miso(miso)
         , .mosi(mosi)
         , .received(spi_byte_received)
