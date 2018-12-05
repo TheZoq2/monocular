@@ -33,10 +33,13 @@ module spi_tb();
 
         `ASSERT_EQ(transmission_started, 0)
         // Bit0
-           mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
+           mosi = 1; #1 spi_clk = 1;
+        #1
         `ASSERT_EQ(transmission_started, 1)
-        #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
+        #1
         `ASSERT_EQ(transmission_started, 0)
+        #2 spi_clk = 0;
+        #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 0; #1 spi_clk = 1; #4 spi_clk = 0;
         #3 mosi = 1; #1 spi_clk = 1; #4 spi_clk = 0;
@@ -109,5 +112,6 @@ module spi_tb();
         , .to_output(output_data)
         , .data(spi_out)
         , .received(newData)
+        , .transmission_started(transmission_started)
         );
 endmodule
