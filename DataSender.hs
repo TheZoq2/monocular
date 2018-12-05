@@ -83,8 +83,8 @@ dataSender =
                  , PortName "rst"
                  , PortProduct ""
                     [ PortName "dataIn"
-                    , PortName "transmissionDone"
-                    , PortName "transmissionStart"
+                    , PortName "transmission_done"
+                    , PortName "transmission_started"
                     ]
                  ]
     , t_output = PortName "dataOut" 

@@ -28,7 +28,25 @@ module main_tb();
 
         // Ensure that the data on the port is sent
         pin_values = 'b1101_0010;
-        #2
+        #3
+
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; #4 spi_clk = 0; #4;
+
         // Check clock data
         repeat (32) begin
             `ASSERT_EQ(miso, 0);
@@ -38,56 +56,16 @@ module main_tb();
             #4;
         end
 
-        `ASSERT_EQ(miso, 1);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 1);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 0);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 1);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 0);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 0);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 1);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-        `ASSERT_EQ(miso, 0);
-        spi_clk = 1; #4 spi_clk = 0; #4;
-
         #10;
-        $finish();
+        `END_TEST
     end
 
-    wire spi_byte_received;
-    wire [7:0] spi_tx_data;
-
-    SPIReader spi
+    main main
         ( .clk(clk)
         , .rst(rst)
-        , .spi_clk(spi_clk)
-        , .to_output(spi_tx_data)
         , .miso(miso)
         , .mosi(mosi)
-        , .received(spi_byte_received)
-        );
-
-
-    wire [39:0] data_to_send;
-
-    DataSender ds
-        ( .clk(clk)
-        , .rst(rst)
-        , .dataIn(data_to_send)
-        , .transmissionDone(spi_byte_received)
-        , .dataOut(spi_tx_data)
-        );
-
-    SignalAnalyser sa
-        ( .clk(clk)
-        , .rst(rst)
-        , .dataIn(pin_values)
-        , .dataTime(data_to_send[39:8])
-        , .dataOut(data_to_send[7:0])
+        , .spi_clk(spi_clk)
+        , .pin_values(pin_values)
         );
 endmodule
