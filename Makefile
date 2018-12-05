@@ -3,6 +3,8 @@ APIO_FILES=apio.ini pins.pcf
 BUILD_DIR=build
 APIO_BUILD_DIR=apio_build
 
+IVERILOG_FLAGS=-g2012
+
 
 
 # All haskell files in the project
@@ -11,6 +13,8 @@ hs_targets := $(patsubst %.hs, verilog/%/built, $(wildcard *.hs))
 
 # All test files in the project
 test_files := $(wildcard test/*.v)
+
+# Output VCD files
 vcds := $(patsubst test/%.v, output/%.v.vcd, ${test_files})
 
 # Non test verilog files
@@ -18,7 +22,9 @@ hdl = $(wildcard hdl/*.v)
 
 .SECONDEXPANSION:
 # All verilog files built by clash
-verilogs=$(shell find verilog -name '*.v')
+generated_verilogs=$(shell find verilog -name '*.v')
+# Verilog files used in both tests and synthetisation
+non_test_verilogs=${generated_verilogs} ${hdl}
 # All output files
 outfiles := $(patsubst test/%.v, bin/%.v.out, ${test_files})
 
@@ -26,7 +32,7 @@ outfiles := $(patsubst test/%.v, bin/%.v.out, ${test_files})
 .SECONDARY: $(outfiles)
 
 # Main rule
-ring_kompilatorn: sim
+all: sim
 
 # Build all HS targets
 build_hs: $(hs_targets)
@@ -43,10 +49,10 @@ verilog/%/built: %.hs
 sim: build_hs $(vcds)
 
 # Simulation executables
-bin/%.v.out: test/%.v $(hs_targets) $(hdl)
+bin/%.v.out: test/%.v $(hs_targets) $(non_test_verilogs)
 	@echo -e "[\033[0;34miverilog\033[0m] building $@"
 	@mkdir -p bin
-	@iverilog -o ${@} -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.vcd\" ${hdl} $< ${verilogs}
+	@iverilog -o ${@} ${IVERILOG_FLAGS} -DVCD_OUTPUT=\"output/${<F}.vcd\" ${non_test_verilogs} $<
 
 # Simulation results
 output/%.v.vcd: bin/%.v.out FORCE
@@ -58,7 +64,7 @@ output/%.v.vcd: bin/%.v.out FORCE
 # Synthetisise for hardware
 build: build_hs
 	@mkdir -p ${APIO_BUILD_DIR}
-	@cp ${MAIN} ${verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
+	@cp ${MAIN} ${non_test_verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
 	@echo -e "[\033[0;34mapio\033[0m] building"
 	@apio build -p ${APIO_BUILD_DIR}
 
@@ -80,5 +86,5 @@ FORCE:
 
 # Builds an iverlog command file with all build options that can be passed to linters
 iverilog_commandfile: build_hs
-	@echo -e $(patsubst %, '-l %\n', ${HDL} ${verilogs}) > .verilog_config
+	@echo -e $(patsubst %, '-l %\n', ${non_test_verilogs}) > .verilog_config
 
