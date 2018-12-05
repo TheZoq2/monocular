@@ -77,7 +77,7 @@ signalAnalyser =
 
 {-# ANN topEntity
   (Synthesize
-    { t_name   = "signal_analyser"
+    { t_name   = "SignalAnalyser"
     , t_inputs = [ PortName "clk"
                  , PortName "rst"
                  , PortName "dataIn"

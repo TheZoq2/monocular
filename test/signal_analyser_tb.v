@@ -56,7 +56,7 @@ module signal_analyser_tb();
         `END_TEST
     end
 
-    signal_analyser analyser (
+    SignalAnalyser analyser (
         .clk(clk),
         .rst(rst),
         .dataIn(d),

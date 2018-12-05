@@ -53,7 +53,7 @@ fn main() -> ! {
 
     // onboard led (1 = on)
     //
-    spi.write(&[0b1111_0000]);
+    spi.write(&[0b1010_0010]);
 
     chip_sel.set_high();
     loop {
