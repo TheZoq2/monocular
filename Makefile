@@ -2,53 +2,67 @@ MAIN=top.v
 APIO_FILES=apio.ini pins.pcf
 BUILD_DIR=build
 APIO_BUILD_DIR=apio_build
-HDL = $(wildcard hdl/*.v)
 
 
+
+# All haskell files in the project
 hs_files := $(wildcard *.hs)
 hs_targets := $(patsubst %.hs, verilog/%/built, $(wildcard *.hs))
 
+# All test files in the project
 test_files := $(wildcard test/*.v)
 vcds := $(patsubst test/%.v, output/%.v.vcd, ${test_files})
 
+# Non test verilog files
+hdl = $(wildcard hdl/*.v)
 
 .SECONDEXPANSION:
+# All verilog files built by clash
 verilogs=$(shell find verilog -name '*.v')
+# All output files
 outfiles := $(patsubst test/%.v, bin/%.v.out, ${test_files})
 
+# Prevent output files from being removed automatically
 .SECONDARY: $(outfiles)
 
+# Main rule
 ring_kompilatorn: sim
 
+# Build all HS targets
 build_hs: $(hs_targets)
 
 
+# Build HS files, touch a flag to indicate that the file is built
 verilog/%/built: %.hs
 	@echo -e "[\033[0;34mclash\033[0m] Building $<"
 	@stack exec -- clash --verilog $<
 	@touch $@
 
 
+# Simulate the design
 sim: build_hs $(vcds)
 
-output/%.v.vcd: bin/%.v.out $(HDL) FORCE
+# Simulation executables
+bin/%.v.out: test/%.v $(hs_targets) $(hdl)
+	@echo -e "[\033[0;34miverilog\033[0m] building $@"
+	@mkdir -p bin
+	@iverilog -o ${@} -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.vcd\" ${hdl} $< ${verilogs}
+
+# Simulation results
+output/%.v.vcd: bin/%.v.out FORCE
 	@mkdir -p output
 	@echo -e "[\033[0;34mvvp\033[0m] simulating $<"
 	@vvp $< | grep -v dumpfile
 
 
-bin/%.v.out: test/%.v $(HDL) $(hs_targets)
-	@echo -e "[\033[0;34miverilog\033[0m] building $@"
-	@mkdir -p bin
-	@iverilog -o ${@} -g2012 -gverilog-ams -gassertions  -DVCD_OUTPUT=\"output/${<F}.vcd\" ${HDL} $< ${verilogs}
-
-
+# Synthetisise for hardware
 build: build_hs
 	@mkdir -p ${APIO_BUILD_DIR}
 	@cp ${MAIN} ${verilogs} ${APIO_FILES} ${APIO_BUILD_DIR}
 	@echo -e "[\033[0;34mapio\033[0m] building"
 	@apio build -p ${APIO_BUILD_DIR}
 
+# Upload to tinyfpga
 upload: build
 	@echo -e "[\033[0;34mapio\033[0m] uploading"
 	@apio upload -p ${APIO_BUILD_DIR}
@@ -61,8 +75,10 @@ clean:
 	rm ${BUILD_DIR} -rf
 
 
+# Dummy directive used to force recompilation of all tests
 FORCE:
 
+# Builds an iverlog command file with all build options that can be passed to linters
 iverilog_commandfile: build_hs
 	@echo -e $(patsubst %, '-l %\n', ${HDL} ${verilogs}) > .verilog_config
 
