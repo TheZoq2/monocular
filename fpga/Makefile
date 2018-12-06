@@ -19,6 +19,7 @@ vcds := $(patsubst test/%.v, output/%.v.vcd, ${test_files})
 
 # Non test verilog files
 hdl = $(wildcard hdl/*.v)
+test_only_hdl = hdl/test/assert.v
 
 .SECONDEXPANSION:
 # All verilog files built by clash
@@ -52,7 +53,11 @@ sim: build_hs $(vcds)
 bin/%.v.out: test/%.v $(hs_targets) $(non_test_verilogs)
 	@echo -e "[\033[0;34miverilog\033[0m] building $@"
 	@mkdir -p bin
-	@iverilog -o ${@} ${IVERILOG_FLAGS} -DVCD_OUTPUT=\"output/${<F}.vcd\" ${non_test_verilogs} $<
+	@iverilog \
+		-o ${@} \
+		${IVERILOG_FLAGS} \
+		-DVCD_OUTPUT=\"output/${<F}.vcd\" \
+		${test_only_hdl} ${non_test_verilogs} $<
 
 # Simulation results
 output/%.v.vcd: bin/%.v.out FORCE
