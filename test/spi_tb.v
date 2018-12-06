@@ -96,6 +96,33 @@ module spi_tb();
         spi_clk = 0; # 4
         `ASSERT_EQ(miso, 0);
 
+        spi_clk = 1; # 4
+        output_data = 'b00101101;
+        spi_clk = 0; # 4
+        // Ensure that immediate data changes don't cause issues
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 0);
+        spi_clk = 1; # 4
+        spi_clk = 0; # 4
+        `ASSERT_EQ(miso, 1);
+
 
 
         # 10

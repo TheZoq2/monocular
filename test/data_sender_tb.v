@@ -87,7 +87,28 @@ module data_sender_tb();
         #2 transmission_done = 1; #2 transmission_done = 0;
         `ASSERT_EQ(byte_to_send, 'h12);
 
+        #8
 
+
+        // Ensure that data transmission still works if we get tx started
+        // messages after every byte
+        // Ensure that the new data is sent now that transmission start is low
+
+       transmission_started = 1; #2 transmission_started = 0; #2
+        #2;
+        `ASSERT_EQ(byte_to_send, 'h9a);
+           transmission_done = 1; #2 transmission_done = 0;
+        `ASSERT_EQ(byte_to_send, 'h78);
+           transmission_started = 1; #2 transmission_started = 0; #2
+        #2 transmission_done = 1; #2 transmission_done = 0;
+        `ASSERT_EQ(byte_to_send, 'h56);
+           transmission_started = 1; #2 transmission_started = 0; #2
+        #2 transmission_done = 1; #2 transmission_done = 0;
+        `ASSERT_EQ(byte_to_send, 'h34);
+           transmission_started = 1; #2 transmission_started = 0; #2
+        #2 transmission_done = 1; #2 transmission_done = 0;
+        `ASSERT_EQ(byte_to_send, 'h12);
+           transmission_started = 1; #2 transmission_started = 0; #2
 
         #10
 

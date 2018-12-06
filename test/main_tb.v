@@ -9,7 +9,9 @@ module main_tb();
 
     reg [31:0] current_time;
     reg [31:0] tx_start_time;
+
     integer i;
+    integer b;
 
     initial begin
         $dumpfile(`VCD_OUTPUT);
@@ -41,6 +43,7 @@ module main_tb();
 
         // Ensure that the data on the port is sent
         pin_values = 'b1101_0010;
+        tx_start_time = current_time;
         #3
 
         `ASSERT_EQ(miso, 1);
@@ -60,19 +63,22 @@ module main_tb();
         `ASSERT_EQ(miso, 0);
         spi_clk = 1; #4 spi_clk = 0; #4;
 
+        // Check clock data
+        for (b = 0; b < 4; b = b + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
+                `ASSERT_EQ(miso, tx_start_time[(b+1) * 8 - i - 1]);
+                spi_clk = 1;
+                #4;
+                spi_clk = 0;
+                #4;
+            end
+        end
+
+
         // Set some new data
         pin_values = 'b0010_1101;
         tx_start_time = current_time;
 
-
-        // Check clock data
-        repeat (32) begin
-            `ASSERT_EQ(miso, 0);
-            spi_clk = 1;
-            #4;
-            spi_clk = 0;
-            #4;
-        end
 
         // Ensure that the new data is being transmitted
         #4;
@@ -94,12 +100,14 @@ module main_tb();
         spi_clk = 1; #4 spi_clk = 0; #4;
 
         // Check clock data
-        for (i = 0; i < 32; i = i + 1) begin
-            `ASSERT_EQ(miso, tx_start_time[i]);
-            spi_clk = 1;
-            #4;
-            spi_clk = 0;
-            #4;
+        for (b = 0; b < 4; b = b + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
+                `ASSERT_EQ(miso, tx_start_time[(b+1) * 8 - i - 1]);
+                spi_clk = 1;
+                #4;
+                spi_clk = 0;
+                #4;
+            end
         end
 
         #10;

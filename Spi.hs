@@ -98,6 +98,8 @@ updateStateOutput (Input clk input toOutput) state =
             state {dataOut = rotateL (dataOut state) 1}
         NoTransmission ->
             state {dataOut = toOutput}
+        TransmissionDone ->
+            state {dataOut = toOutput}
         _ ->
             state
 
