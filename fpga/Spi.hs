@@ -23,18 +23,16 @@ data Input = Input
 
 data State = State
     { step :: Step
-    , dataIn :: Unsigned 8
-    , dataOut :: Unsigned 8
-    , outBuffer :: Unsigned 8
+    , received :: Unsigned 8
+    , toTransmit :: Unsigned 8
     } deriving Show
 
 
 initialState :: State
 initialState = State
     { step = NoTransmission
-    , dataIn = 0
-    , dataOut = 0b10101011
-    , outBuffer = 0
+    , received = 0
+    , toTransmit = 0b10101011
     }
 
 
@@ -81,11 +79,11 @@ nextStep State {step=step} (Input clk input toOutput) =
 updateStateData :: State -> Input -> State
 updateStateData state (Input clk input toOutput) =
     let
-        State {step=step, dataIn=dataIn} = state
+        State {step=step, received=received} = state
     in
         case step of
             ClkRising _ ->
-                state { dataIn = shift dataIn 1 + fromInteger (toInteger input) }
+                state { received = shift received 1 + fromInteger (toInteger input) }
             _ ->
                 state
 
@@ -94,18 +92,18 @@ updateStateOutput :: Input -> State -> State
 updateStateOutput (Input clk input toOutput) state =
     case step state of
         ClkFalling _ ->
-            state {dataOut = rotateL (dataOut state) 1}
+            state {toTransmit = rotateL (toTransmit state) 1}
         NoTransmission ->
-            state {dataOut = toOutput}
+            state {toTransmit = toOutput}
         TransmissionDone ->
-            state {dataOut = toOutput}
+            state {toTransmit = toOutput}
         _ ->
             state
 
 
 
 output :: State -> Input -> (Unsigned 8, Bit, Bit, Bit, Bit)
-output State {step=step, dataIn=dataIn, dataOut=dataOut} input =
+output State {step=step, received=received, toTransmit=toTransmit} input =
     let
         amount = case step of
             NoTransmission -> 255
@@ -115,9 +113,9 @@ output State {step=step, dataIn=dataIn, dataOut=dataOut} input =
             ClkRising amount -> amount
             ClkUp amount -> amount
     in
-    ( amount -- dataIn
+    ( amount -- received
     , if step == TransmissionDone then 1 else 0
-    , msb (dataOut :: Unsigned 8)
+    , msb (toTransmit :: Unsigned 8)
     , if step == ClkRising 0 then 1 else 0
     , case step of
           ClkFalling _ -> 0
@@ -174,5 +172,7 @@ topEntity
   -> Signal System (Bit, Bit, Unsigned 8)
   -> Signal System (Unsigned 8, Bit, Bit, Bit, Bit)
 topEntity = exposeClockReset spi
+
+
 
 
