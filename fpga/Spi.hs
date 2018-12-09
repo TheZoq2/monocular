@@ -8,10 +8,10 @@ import Clash.Explicit.Testbench
 data Step
     = NoTransmission
     | TransmissionDone
-    | ClkRising Int
-    | ClkUp Int
-    | ClkDown Int
-    | ClkFalling Int
+    | ClkRising (Unsigned 8)
+    | ClkUp (Unsigned 8)
+    | ClkDown (Unsigned 8)
+    | ClkFalling (Unsigned 8)
     deriving (Show, Eq)
 
 
@@ -55,16 +55,15 @@ nextStep State {step=step} (Input clk input toOutput) =
                 1 -> ClkRising 0
                 _ -> NoTransmission
         ClkFalling amount ->
-            case clk of
-                1 -> ClkRising (amount + 1)
-                _ ->
-                    if amount == 7 then
-                        TransmissionDone
-                    else
-                        ClkDown amount
+            if amount == 7 then
+                TransmissionDone
+            else
+                case clk of
+                    1 -> ClkRising (amount + 1)
+                    _ -> ClkDown (amount + 1)
         ClkDown amount ->
             case clk of
-                1 -> ClkRising (amount + 1)
+                1 -> ClkRising amount
                 _ -> ClkDown amount
         ClkRising amount ->
             case clk of
@@ -105,17 +104,32 @@ updateStateOutput (Input clk input toOutput) state =
 
 
 
-output :: State -> Input -> (Unsigned 8, Bit, Bit, Bit)
+output :: State -> Input -> (Unsigned 8, Bit, Bit, Bit, Bit)
 output State {step=step, dataIn=dataIn, dataOut=dataOut} input =
-    ( dataIn
+    let
+        amount = case step of
+            NoTransmission -> 255
+            TransmissionDone -> 255
+            ClkFalling amount -> amount
+            ClkDown amount -> amount
+            ClkRising amount -> amount
+            ClkUp amount -> amount
+    in
+    ( amount -- dataIn
     , if step == TransmissionDone then 1 else 0
     , msb (dataOut :: Unsigned 8)
     , if step == ClkRising 0 then 1 else 0
+    , case step of
+          ClkFalling _ -> 0
+          ClkDown _ -> 0
+          TransmissionDone -> 1
+          NoTransmission -> 1
+          _ -> 0
     )
 
 
 
-spiT :: State -> (Bit, Bit, Unsigned 8) -> (State, (Unsigned 8, Bit, Bit, Bit))
+spiT :: State -> (Bit, Bit, Unsigned 8) -> (State, (Unsigned 8, Bit, Bit, Bit, Bit))
 spiT state (clk, mosi, toOutput) =
     let
         input = Input clk mosi toOutput
@@ -151,13 +165,14 @@ spi =
         , PortName "received"
         , PortName "miso"
         , PortName "transmission_started"
+        , PortName "debug"
         ]
     }) #-}
 topEntity
   :: Clock System Source
   -> Reset System Asynchronous
   -> Signal System (Bit, Bit, Unsigned 8)
-  -> Signal System (Unsigned 8, Bit, Bit, Bit)
+  -> Signal System (Unsigned 8, Bit, Bit, Bit, Bit)
 topEntity = exposeClockReset spi
 
 
