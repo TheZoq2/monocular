@@ -1,0 +1,54 @@
+
+icetime topological timing analysis report
+==========================================
+
+Info: max_span_hack is enabled: estimate is conservative.
+
+Report for critical path:
+-------------------------
+
+        lc40_19_21_2 (LogicCell40) [clk] -> lcout: 0.896 ns
+     0.896 ns net_75281 (reader.state[33])
+        odrv_19_21_75281_75426 (Odrv4) I -> O: 0.548 ns
+        t86 (Span4Mux_h4) I -> O: 0.465 ns
+        t85 (LocalMux) I -> O: 0.486 ns
+        inmux_20_24_83845_83912 (InMux) I -> O: 0.382 ns
+        lc40_20_24_6 (LogicCell40) in0 -> lcout: 0.662 ns
+     3.439 ns net_79731 ($abc$899$n60)
+        odrv_20_24_79731_83198 (Odrv12) I -> O: 0.796 ns
+        t119 (Span12Mux_h12) I -> O: 0.796 ns
+        t118 (Sp12to4) I -> O: 0.662 ns
+        t117 (Span4Mux_v4) I -> O: 0.548 ns
+        t116 (LocalMux) I -> O: 0.486 ns
+        inmux_23_15_94983_95014 (InMux) I -> O: 0.382 ns
+        t19 (CascadeMux) I -> O: 0.000 ns
+        lc40_23_15_2 (LogicCell40) in2 -> lcout: 0.558 ns
+     7.667 ns net_90851 ($abc$899$n66)
+        odrv_23_15_90851_94814 (Odrv12) I -> O: 0.796 ns
+        t185 (Sp12to4) I -> O: 0.662 ns
+        t184 (Span4Mux_h4) I -> O: 0.465 ns
+        t183 (Span4Mux_v4) I -> O: 0.548 ns
+        t182 (LocalMux) I -> O: 0.486 ns
+        inmux_26_21_107266_107333 (InMux) I -> O: 0.382 ns
+        lc40_26_21_6 (LogicCell40) in1 -> lcout: 0.589 ns
+    11.595 ns net_103373 (PIN_19$2)
+        odrv_26_21_103373_99882 (Odrv4) I -> O: 0.548 ns
+        t280 (Span4Mux_v4) I -> O: 0.548 ns
+        t279 (Span4Mux_v4) I -> O: 0.548 ns
+        t278 (Span4Mux_v4) I -> O: 0.548 ns
+        t277 (IoSpan4Mux) I -> O: 0.475 ns
+        t276 (LocalMux) I -> O: 0.486 ns
+        inmux_30_33_125061_125054 (IoInMux) I -> O: 0.382 ns
+    15.130 ns net_125054 (PIN_19$2)
+        pre_io_30_33_1 (PRE_IO) DOUT0 [setup]: 0.103 ns
+    15.233 ns io_pad_30_33_1_din
+
+Resolvable net names on path:
+     0.896 ns ..  2.777 ns reader.state[33]
+     3.439 ns ..  7.108 ns $abc$899$n60
+     7.667 ns .. 11.005 ns $abc$899$n66
+    11.595 ns .. 15.130 ns PIN_19$2
+
+Total number of logic levels: 4
+Total path delay: 15.23 ns (65.65 MHz)
+

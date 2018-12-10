@@ -8,12 +8,15 @@ extern crate cortex_m;
 extern crate cortex_m_rt as rt;
 extern crate panic_semihosting;
 extern crate stm32f103xx_hal as hal;
+#[macro_use(block)]
+extern crate nb;
 
 use hal::prelude::*;
 use hal::stm32f103xx;
 use hal::time::Hertz;
 use hal::spi::{self, Spi, Polarity, Phase};
 use rt::{entry, exception, ExceptionFrame};
+use cortex_m::asm;
 
 #[entry]
 fn main() -> ! {
@@ -42,7 +45,7 @@ fn main() -> ! {
         (sck, miso, mosi),
         &mut afio.mapr,
         spi::Mode{polarity: Polarity::IdleLow, phase: Phase::CaptureOnFirstTransition},
-        Hertz(100_000),
+        Hertz(4_000_000),
         clocks,
         &mut rcc.apb2
     );
@@ -51,12 +54,26 @@ fn main() -> ! {
     chip_sel.set_high();
     chip_sel.set_low();
 
+    let mut rst = gpioa.pa1.into_floating_input(&mut gpioa.crl);
+
+    while rst.is_low() {}
+    while rst.is_high() {}
+
     // onboard led (1 = on)
     //
-    spi.write(&[0b1010_0010]);
+    // spi.write(&[0b1010_0010]);
 
-    chip_sel.set_high();
+    let mut counter = 0;
     loop {
+        spi.send(0b10000001);
+        let byte = block!(spi.read()).unwrap();
+
+        if byte != 0b10000001 {
+            panic!("Got invalid byte {:b} after {} bytes", byte, counter)
+            // asm::bkpt();
+        }
+        counter += 1;
+        // asm::bkpt();
     }
 }
 

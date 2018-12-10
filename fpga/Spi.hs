@@ -113,9 +113,8 @@ output State {step=step, received=received, toTransmit=toTransmit} input =
             ClkRising amount -> amount
             ClkUp amount -> amount
     in
-    ( amount -- received
-    , if step == TransmissionDone then 1 else 0
-    , msb (toTransmit :: Unsigned 8)
+    ( received
+    , if step == TransmissionDone then 1 else 0 , msb (toTransmit :: Unsigned 8)
     , if step == ClkRising 0 then 1 else 0
     , case step of
           ClkFalling _ -> 0

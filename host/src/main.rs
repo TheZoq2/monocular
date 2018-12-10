@@ -9,12 +9,14 @@ use spidev::{
     SPI_MODE_0
 };
 
+use time::PreciseTime;
+
 
 use std::thread::sleep;
 use std::time::Duration;
 
 
-const SPI_FREQUENCY: u32 = 1 * 100_000;
+const SPI_FREQUENCY: u32 = 1 * 2_000_000;
 
 
 fn create_spi() -> io::Result<Spidev> {
@@ -29,7 +31,7 @@ fn create_spi() -> io::Result<Spidev> {
     Ok(spi)
 }
 
-const BYTE_AMOUNT: usize = 1;
+const BYTE_AMOUNT: usize = 100;
 
 /// Perform full duplex operations using Ioctl
 fn read_data(spi: &mut Spidev) -> io::Result<[u8; BYTE_AMOUNT]> {
@@ -53,15 +55,29 @@ fn transfer_data(spi: &mut Spidev, data: [u8; BYTE_AMOUNT]) -> io::Result<[u8; B
 fn main() {
     let mut spi = create_spi().unwrap();
 
-    'outer: loop {
-        let response = transfer_data(&mut spi, [0b1010_0000]).unwrap();
 
-        for byte in &response {
-            println!("{:8b}", byte);
-            if *byte != 0b1000_0001 {
-                break 'outer;
-            }
-        }
-        // sleep(Duration::from_millis(100));
+    let start = PreciseTime::now();
+    let read_amount = 10_000;
+    let count = 0;
+    for _ in 0.. read_amount {
+        let response = transfer_data(&mut spi, [0; 100]).unwrap();
+
+        // for byte in response.iter() {
+        //     // println!("{:8b}", byte);
+        //     if *byte != 0b1000_0001 {
+        //         panic!("Got invalid byte {:8b} after {}", byte, count);
+        //     }
+        // }
     }
+
+    let duration = start.to(PreciseTime::now());
+    let duration_seconds =
+        duration.num_milliseconds() as f32 / 1000.;
+    let byte_amount = read_amount * BYTE_AMOUNT;
+    println!(
+        "Reading {} bytes took {} seconds",
+        byte_amount,
+        duration_seconds
+    );
+    println!("This equates to a bitrate of {} ", (byte_amount as f32 * 8.) / duration_seconds);
 }
