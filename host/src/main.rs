@@ -2,7 +2,6 @@ mod decoder;
 
 use std::io::{
     self,
-    prelude::*
 };
 use spidev::{
     Spidev,
@@ -45,9 +44,8 @@ fn main() {
 
     let start = PreciseTime::now();
     let read_amount = 10_000;
-    let count = 0;
     for _ in 0.. read_amount {
-        let response = transfer_data(&mut spi, [0; 100]).unwrap();
+        transfer_data(&mut spi, [0; 100]).unwrap();
 
         // for byte in response.iter() {
         //     // println!("{:8b}", byte);
