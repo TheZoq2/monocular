@@ -1,17 +1,19 @@
 mod decoder;
+mod websockets;
+mod types;
 
 use std::io::{
     self,
 };
+use std::sync::mpsc;
+use std::thread;
+
 use spidev::{
     Spidev,
     SpidevOptions,
     SpidevTransfer,
     SPI_MODE_0
 };
-
-use time::PreciseTime;
-
 
 const SPI_FREQUENCY: u32 = 1 * 2_000_000;
 
@@ -41,28 +43,8 @@ fn transfer_data(spi: &mut Spidev, data: [u8; BYTE_AMOUNT]) -> io::Result<[u8; B
 fn main() {
     let mut spi = create_spi().unwrap();
 
+    let (web_tx, web_rx) = mpsc::channel();
 
-    let start = PreciseTime::now();
-    let read_amount = 10_000;
-    for _ in 0.. read_amount {
-        transfer_data(&mut spi, [0; 100]).unwrap();
-
-        // for byte in response.iter() {
-        //     // println!("{:8b}", byte);
-        //     if *byte != 0b1000_0001 {
-        //         panic!("Got invalid byte {:8b} after {}", byte, count);
-        //     }
-        // }
-    }
-
-    let duration = start.to(PreciseTime::now());
-    let duration_seconds =
-        duration.num_milliseconds() as f32 / 1000.;
-    let byte_amount = read_amount * BYTE_AMOUNT;
-    println!(
-        "Reading {} bytes took {} seconds",
-        byte_amount,
-        duration_seconds
-    );
-    println!("This equates to a bitrate of {} ", (byte_amount as f32 * 8.) / duration_seconds);
+    thread::spawn(move || websockets::server("0.0.0.0:7878", web_rx));
 }
+
