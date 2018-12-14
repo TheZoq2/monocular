@@ -1,15 +1,31 @@
 use serde_derive::{Serialize, Deserialize};
 
+const CHANNEL_AMOUNT: usize = 8;
+type ReadingState = [bool; CHANNEL_AMOUNT];
+
+fn u8_to_state(input: u8) -> ReadingState {
+    [
+        (input >> 7) & 1 == 1,
+        (input >> 6) & 1 == 1,
+        (input >> 5) & 1 == 1,
+        (input >> 4) & 1 == 1,
+        (input >> 3) & 1 == 1,
+        (input >> 2) & 1 == 1,
+        (input >> 1) & 1 == 1,
+        input & 1 == 1
+    ]
+}
+
 #[derive(PartialEq, Eq, Debug, Serialize, Deserialize, Clone)]
 pub struct Reading {
-    pub state: u8,
+    pub state: ReadingState,
     pub time: u32
 }
 
 
 impl Reading {
     pub fn new(state: u8, time: u32) -> Self {
-        Self {state, time}
+        Self {state: u8_to_state(state), time}
     }
 
     pub fn has_new_information(&self, prev: &Self) -> bool {
@@ -20,7 +36,7 @@ impl Reading {
 impl From<[u8;5]> for Reading {
     fn from(bytes: [u8;5]) -> Self {
         Reading {
-            state: bytes[0],
+            state: u8_to_state(bytes[0]),
             time: (
                 ((bytes[1] as u32) << 24) +
                 ((bytes[2] as u32) << 16) +
@@ -37,11 +53,18 @@ mod reading_tests {
     use super::*;
 
     #[test]
+    fn reading_state_conversion_works() {
+        assert_eq!(u8_to_state(0b00000000), [false; 8]);
+        assert_eq!(u8_to_state(0b11111111), [true; 8]);
+        assert_eq!(u8_to_state(0b11010010), [true, true, false, true, false, false, true, false]);
+    }
+
+    #[test]
     fn decoding_current_state_works() {
         let state = 0b10100101;
         let reading = Reading::from([state, 1,2,3,4]);
 
-        assert_eq!(reading.state, state);
+        assert_eq!(reading.state, u8_to_state(state));
     }
 
     #[test]

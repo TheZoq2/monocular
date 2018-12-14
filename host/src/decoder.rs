@@ -79,8 +79,8 @@ mod decoder_tests {
         loop_iteration(&mut state, &byte_rx, &reading_tx);
         loop_iteration(&mut state, &byte_rx, &reading_tx);
 
-        assert_eq!(reading_rx.recv().expect("Failed to receive byte"), Reading::new(1, 0));
-        assert_eq!(reading_rx.recv().expect("Failed to receive byte"), Reading::new(2, 0));
+        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(1, 0));
+        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(2, 0));
         assert!(reading_rx.try_recv().is_err());
     }
 }
