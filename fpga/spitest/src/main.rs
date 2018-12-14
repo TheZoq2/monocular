@@ -33,6 +33,9 @@ fn main() -> ! {
     //     .pclk1(32.mhz())
     //     .freeze(&mut flash.acr);
 
+    let mut afio = dp.AFIO.constrain(&mut rcc.apb2);
+    afio.mapr.disable_jtag();
+
     let mut gpioa = dp.GPIOA.split(&mut rcc.apb2);
     let mut gpiob = dp.GPIOB.split(&mut rcc.apb2);
 
@@ -47,14 +50,14 @@ fn main() -> ! {
 
 
 
-    pin_1.set_low();
+    pin_1.set_high();
     pin_2.set_low();
     pin_3.set_low();
-    pin_4.set_low();
-    pin_5.set_low();
+    pin_4.set_high();
+    pin_5.set_high();
     pin_6.set_low();
-    pin_7.set_low();
-    pin_8.set_low();
+    pin_7.set_high();
+    pin_8.set_high();
     loop {
     }
 }
