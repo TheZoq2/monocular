@@ -13,3 +13,5 @@ verilog
 build
 output
 apio_build
+
+.verilog_config
