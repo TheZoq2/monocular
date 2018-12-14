@@ -69,6 +69,7 @@ module data_sender_tb();
         `ASSERT_EQ(byte_to_send, 'h22);
         #2 transmission_done = 1; #2 transmission_done = 0;
         `ASSERT_EQ(byte_to_send, 'h11);
+        #2 transmission_done = 1; #2 transmission_done = 0;
 
         #2
         transmission_started = 1;
@@ -86,29 +87,39 @@ module data_sender_tb();
         `ASSERT_EQ(byte_to_send, 'h34);
         #2 transmission_done = 1; #2 transmission_done = 0;
         `ASSERT_EQ(byte_to_send, 'h12);
+        #2 transmission_done = 1; #2 transmission_done = 0;
 
         #8
+
+        rst = 1;
+        #2
+        rst = 0;
 
 
         // Ensure that data transmission still works if we get tx started
         // messages after every byte
         // Ensure that the new data is sent now that transmission start is low
+        signal_to_send = 'h1122334455;
 
-       transmission_started = 1; #2 transmission_started = 0; #2
-        #2;
-        `ASSERT_EQ(byte_to_send, 'h9a);
-           transmission_done = 1; #2 transmission_done = 0;
-        `ASSERT_EQ(byte_to_send, 'h78);
-           transmission_started = 1; #2 transmission_started = 0; #2
-        #2 transmission_done = 1; #2 transmission_done = 0;
-        `ASSERT_EQ(byte_to_send, 'h56);
-           transmission_started = 1; #2 transmission_started = 0; #2
-        #2 transmission_done = 1; #2 transmission_done = 0;
-        `ASSERT_EQ(byte_to_send, 'h34);
-           transmission_started = 1; #2 transmission_started = 0; #2
-        #2 transmission_done = 1; #2 transmission_done = 0;
-        `ASSERT_EQ(byte_to_send, 'h12);
-           transmission_started = 1; #2 transmission_started = 0; #2
+        transmission_started = 1; #2 transmission_started = 0; #4
+        signal_to_send = 'h1122334456;
+        `ASSERT_EQ(byte_to_send, 'h55);
+           transmission_done = 1; #2 transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h44);
+           transmission_started = 1; #2 transmission_started = 0; #4
+        #4 transmission_done = 1; #2 transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h33);
+           transmission_started = 1; #2 transmission_started = 0; #4
+        #4 transmission_done = 1; #2 transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h22);
+           transmission_started = 1; #2 transmission_started = 0; #4
+        #4 transmission_done = 1; #2 transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h11);
+           transmission_started = 1; #2 transmission_started = 0; #6
+           // Last byte has been sent, we now expect the first byte of the
+           // next chunk to be loaded
+           transmission_done = 1; #2 transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h56)
 
         #10
 

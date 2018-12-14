@@ -39,7 +39,10 @@ updateState (inD, transmissionDone, transmissionStart) state =
                     else
                         Waiting
                 Transmiting 0 ->
-                    Waiting
+                    if transmissionDone == high then
+                        Waiting
+                    else
+                        Transmiting 0
                 Transmiting n ->
                     if transmissionDone == high then
                         Transmiting (n - 1)
