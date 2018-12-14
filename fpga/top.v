@@ -52,27 +52,17 @@ module top (
     //     , .to_output('b10000001)
     //     );
 
-    // wire pin_values =
-    //     { PIN_5
-    //     , PIN_6
-    //     , PIN_7
-    //     , PIN_8
-    //     , PIN_9
-    //     , PIN_10
-    //     , PIN_11
-    //     , PIN_12
-    //     };
-    
     wire [7:0] pin_values =
-        { 1
-        , 1
-        , 1
-        , 1
-        , 1
-        , 1
-        , 1
-        , 1
+        { PIN_5
+        , PIN_6
+        , PIN_7
+        , PIN_8
+        , PIN_9
+        , PIN_10
+        , PIN_11
+        , PIN_12
         };
+
 
     main_module main
         ( .clk(CLK)
@@ -130,7 +120,7 @@ module top (
         , PIN_19
         , PIN_20
         , PIN_21
-        } = clk_counter;
+        } = pin_values;
 endmodule
 
 
