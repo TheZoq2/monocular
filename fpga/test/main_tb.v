@@ -9,6 +9,7 @@ module main_tb();
 
     reg [31:0] current_time;
     reg [31:0] tx_start_time;
+    reg [31:0] change_time;
 
     integer i;
     integer b;
@@ -63,6 +64,9 @@ module main_tb();
         `ASSERT_EQ(miso, 0);
         spi_clk = 1; #4 spi_clk = 0; #4;
 
+        // Set some new data
+        pin_values = 'b0010_1101;
+        change_time = current_time;
         // Check clock data
         for (b = 0; b < 4; b = b + 1) begin
             for (i = 0; i < 8; i = i + 1) begin
@@ -74,14 +78,10 @@ module main_tb();
             end
         end
 
-
-        // Set some new data
-        pin_values = 'b0010_1101;
-        tx_start_time = current_time;
+        tx_start_time = change_time;
 
 
         // Ensure that the new data is being transmitted
-        #4;
         `ASSERT_EQ(miso, 0);
         spi_clk = 1; #4 spi_clk = 0; #4;
         `ASSERT_EQ(miso, 0);
@@ -114,7 +114,7 @@ module main_tb();
         `END_TEST
     end
 
-    main main
+    main_module main
         ( .clk(clk)
         , .rst(rst)
         , .miso(miso)

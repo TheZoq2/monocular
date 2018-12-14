@@ -13,6 +13,15 @@ module top (
     // Debug pin
     output PIN_4,
 
+    input PIN_5,
+    input PIN_6,
+    input PIN_7,
+    input PIN_8,
+    input PIN_9,
+    input PIN_10,
+    input PIN_11,
+    input PIN_12,
+
     output PIN_14,
     output PIN_15,
     output PIN_16,
@@ -21,32 +30,65 @@ module top (
     output PIN_19,
     output PIN_20,
     output PIN_21,
-
-    // RST forwarding
-    output PIN_5
 );
     wire [7:0] spi_read_byte;
     wire new_spi_byte;
 
     wire spi_clk = PIN_1;
+    wire mosi = PIN_2;
+    wire miso = PIN_3;
+    wire spi_debug = PIN_4;
+    wire reset = PIN_13;
 
 
-    SPIReader reader
+    // SPIReader reader
+    //     ( .clk(CLK)
+    //     , .rst(reset)
+    //     , .spi_clk(spi_clk_buffered)
+    //     , .mosi(mosi)
+    //     , .miso(miso)
+    //     , .data(spi_read_byte)
+    //     , .received(new_spi_byte)
+    //     , .to_output('b10000001)
+    //     );
+
+    // wire pin_values =
+    //     { PIN_5
+    //     , PIN_6
+    //     , PIN_7
+    //     , PIN_8
+    //     , PIN_9
+    //     , PIN_10
+    //     , PIN_11
+    //     , PIN_12
+    //     };
+    
+    wire [7:0] pin_values =
+        { 1
+        , 1
+        , 1
+        , 1
+        , 1
+        , 1
+        , 1
+        , 1
+        };
+
+    main_module main
         ( .clk(CLK)
-        , .rst(PIN_13)
+        , .rst(reset)
+        , .pin_values(pin_values)
         , .spi_clk(spi_clk_buffered)
-        , .mosi(PIN_2)
-        , .miso(PIN_3)
-        , .data(spi_read_byte)
-        , .received(new_spi_byte)
-        , .to_output('b10000001)
-        , .debug(PIN_4)
+        , .mosi(mosi)
+        , .miso(miso)
         );
 
 
-
+    assign USBPU = 0;
+    ////////////////////////////////////////////////////////////////////////////////
+    //                          SPI clock buffering
+    ////////////////////////////////////////////////////////////////////////////////
     reg spi_clk_buffered;
-
     reg [1:0] spi_buffer;
 
     always @(posedge CLK) begin
@@ -58,47 +100,27 @@ module top (
         spi_buffer = {spi_buffer[0], spi_clk};
     end
 
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //                          Clock debug
+    ////////////////////////////////////////////////////////////////////////////////
     reg [2:0] clk_counter;
-
-    // drive USB pull-up resistor to '0' to disable USB
-    assign USBPU = 0;
-
-    assign PIN_5 = PIN_13;
-
-    ////////
-    // make a simple blink circuit
-    ////////
-
-    // keep track of time and location in blink_pattern
-    reg [26:0] blink_counter;
-
-    // pattern that will be flashed over the LED over time
-    reg [7:0] blink_pattern;
-
     always @(posedge CLK) begin
-        if (new_spi_byte) begin
-            blink_pattern = spi_read_byte;
-        end
-
-        if (PIN_13) begin
+        if (reset) begin
             clk_counter = 0;
         end else begin
-            if (PIN_1) begin
+            if (spi_clk) begin
                 clk_counter = clk_counter + 1;
             end
         end
     end
 
-    // increment the blink_counter every clock
-    always @(posedge CLK) begin
-        blink_counter <= blink_counter + 1;
-    end
 
-    // light up the LED according to the pattern
-    // assign LED = blink_pattern[pattern_index];
-    //
-
-    // assign PIN_14 = 1;
+    ////////////////////////////////////////////////////////////////////////////////
+    //                          Debug output
+    ////////////////////////////////////////////////////////////////////////////////
     assign
         { PIN_14
         , PIN_15

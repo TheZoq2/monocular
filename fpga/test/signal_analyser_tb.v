@@ -59,9 +59,9 @@ module signal_analyser_tb();
     SignalAnalyser analyser (
         .clk(clk),
         .rst(rst),
-        .dataIn(d),
-        .dataTime(t),
-        .dataOut(dOut),
-        .newData(newData)
+        .data_in(d),
+        .data_time(t),
+        .data_out(dOut),
+        .new_data(newData)
     );
 endmodule

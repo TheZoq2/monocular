@@ -33,47 +33,29 @@ fn main() -> ! {
     //     .pclk1(32.mhz())
     //     .freeze(&mut flash.acr);
 
-    let mut afio = dp.AFIO.constrain(&mut rcc.apb2);
     let mut gpioa = dp.GPIOA.split(&mut rcc.apb2);
+    let mut gpiob = dp.GPIOB.split(&mut rcc.apb2);
 
-    let sck = gpioa.pa5.into_alternate_push_pull(&mut gpioa.crl);
-    let miso = gpioa.pa6.into_floating_input(&mut gpioa.crl);
-    let mosi = gpioa.pa7.into_alternate_push_pull(&mut gpioa.crl);
+    let mut pin_1 = gpioa.pa8.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_2 = gpioa.pa9.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_3 = gpioa.pa10.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_4 = gpioa.pa11.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_5 = gpioa.pa12.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_6 = gpioa.pa15.into_push_pull_output(&mut gpioa.crh);
+    let mut pin_7 = gpiob.pb3.into_push_pull_output(&mut gpiob.crl);
+    let mut pin_8 = gpiob.pb4.into_push_pull_output(&mut gpiob.crl);
 
-    let mut spi = Spi::spi1(
-        dp.SPI1,
-        (sck, miso, mosi),
-        &mut afio.mapr,
-        spi::Mode{polarity: Polarity::IdleLow, phase: Phase::CaptureOnFirstTransition},
-        Hertz(4_000_000),
-        clocks,
-        &mut rcc.apb2
-    );
 
-    let mut chip_sel = gpioa.pa4.into_push_pull_output(&mut gpioa.crl);
-    chip_sel.set_high();
-    chip_sel.set_low();
 
-    let mut rst = gpioa.pa1.into_floating_input(&mut gpioa.crl);
-
-    while rst.is_low() {}
-    while rst.is_high() {}
-
-    // onboard led (1 = on)
-    //
-    // spi.write(&[0b1010_0010]);
-
-    let mut counter = 0;
+    pin_1.set_low();
+    pin_2.set_low();
+    pin_3.set_low();
+    pin_4.set_low();
+    pin_5.set_low();
+    pin_6.set_low();
+    pin_7.set_low();
+    pin_8.set_low();
     loop {
-        spi.send(0b10000001);
-        let byte = block!(spi.read()).unwrap();
-
-        if byte != 0b10000001 {
-            panic!("Got invalid byte {:b} after {} bytes", byte, counter)
-            // asm::bkpt();
-        }
-        counter += 1;
-        // asm::bkpt();
     }
 }
 

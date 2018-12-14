@@ -30,7 +30,15 @@ impl State {
 fn loop_iteration(state: &mut State, rx: &Receiver<[u8;5]>, tx: &Sender<Reading>) {
     let bytes = rx.recv().expect("Failed to get bytes");
     match state.update(bytes) {
-        Some(reading) => tx.send(reading).expect("Failed to send reading"),
+        Some(reading) => {
+            print!("{:8b} ", bytes[0]);
+            print!("{:8b} ", bytes[1]);
+            print!("{:8b} ", bytes[2]);
+            print!("{:8b} ", bytes[3]);
+            print!("{:8b} ", bytes[4]);
+            println!("got reading: {:?}", reading);
+            tx.send(reading).expect("Failed to send reading");
+        },
         None => {}
     }
 }

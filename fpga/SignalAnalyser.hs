@@ -80,12 +80,12 @@ signalAnalyser =
     { t_name   = "SignalAnalyser"
     , t_inputs = [ PortName "clk"
                  , PortName "rst"
-                 , PortName "dataIn"
+                 , PortName "data_in"
                  ]
     , t_output = PortProduct "" 
-        [ PortName "dataTime"
-        , PortName "dataOut"
-        , PortName "newData"
+        [ PortName "data_time"
+        , PortName "data_out"
+        , PortName "new_data"
         ]
     }) #-}
 topEntity

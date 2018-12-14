@@ -1,4 +1,4 @@
-module main
+module main_module
     ( input clk
     , input rst
     , input [7:0] pin_values
@@ -37,9 +37,9 @@ module main
     SignalAnalyser sa
         ( .clk(clk)
         , .rst(rst)
-        , .dataIn(pin_values)
-        , .dataTime(data_to_send[39:8])
-        , .dataOut(data_to_send[7:0])
+        , .data_in(pin_values)
+        , .data_time(data_to_send[39:8])
+        , .data_out(data_to_send[7:0])
         );
 
 endmodule
