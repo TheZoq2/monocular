@@ -2,64 +2,63 @@ use std::sync::mpsc::{Sender, Receiver};
 
 use crate::types::Reading;
 
-impl From<[u8;5]> for Reading {
-    fn from(bytes: [u8;5]) -> Self {
-        Reading {
-            state: bytes[0],
-            time: (
-                ((bytes[1] as u32) << 24) +
-                ((bytes[2] as u32) << 16) +
-                ((bytes[3] as u32) << 8)  +
-                ((bytes[4] as u32))
-            )
-        }
-    }
+struct State {
+    last_reading: Reading
 }
 
-pub fn run_decoder(rx: Receiver<[u8;5]>, tx: Sender<Reading>) {
-    loop {
-        if let Ok(bytes) = rx.recv() {
-            tx.send(bytes.into())
-                .expect("Failed to send reading, did the receiver disonnect?")
+impl State {
+    fn initial() -> Self {
+        State {
+            last_reading: Reading::new(0, 0)
+        }
+    }
+
+    pub fn update(&mut self, bytes: [u8;5]) -> Option<Reading> {
+        let reading = Reading::from(bytes);
+
+        if reading.has_new_information(&self.last_reading) {
+            self.last_reading = reading.clone();
+            Some(reading)
         }
         else {
-            // panic!("Decoder error: byte sender disconnected");
-            println!("Decoder error: byte sender disconnected");
-            break;
+            None
         }
     }
 }
 
 
-
-#[cfg(test)]
-mod decoding_tests {
-    use super::*;
-
-    #[test]
-    fn decoding_current_state_works() {
-        let state = 0b10100101;
-        let reading = Reading::from([state, 1,2,3,4]);
-
-        assert_eq!(reading.state, state);
-    }
-
-    #[test]
-    fn decoding_time_works() {
-        let state = 123;
-        let time = 0x11223344;
-        let reading = Reading::from([state, 0x11, 0x22, 0x33, 0x44]);
-
-        assert_eq!(reading.time, time);
+fn loop_iteration(state: &mut State, rx: &Receiver<[u8;5]>, tx: &Sender<Reading>) {
+    let bytes = rx.recv().expect("Failed to get bytes");
+    match state.update(bytes) {
+        Some(reading) => tx.send(reading).expect("Failed to send reading"),
+        None => {}
     }
 }
+
+pub fn run(rx: Receiver<[u8;5]>, tx: Sender<Reading>) {
+    let mut state = State::initial();
+    loop {
+        loop_iteration(&mut state, &rx, &tx)
+    }
+}
+
+
 
 
 #[cfg(test)]
 mod decoder_tests {
     use super::*;
 
-    use std::thread;
+    #[test]
+    fn update_with_new_data_works() {
+        let mut state = State::initial();
+
+        let reading = state.update([0;5]);
+
+        assert_eq!(reading, None);
+        let reading = state.update([1,0,0,0,0]);
+        assert_eq!(reading, Some(Reading::new(1, 0)));
+    }
 
     #[test]
     fn sending_works() {
@@ -67,29 +66,19 @@ mod decoder_tests {
         let (byte_tx, byte_rx) = ::std::sync::mpsc::channel();
 
 
-        let handle = thread::spawn(|| run_decoder(byte_rx, reading_tx));
+        let mut state = State::initial();
 
-        let received = {
-            // Move RX into a new scope to force it to be dropped and crash the other thread
-            let tx = byte_tx;
-            let reading_rx = reading_rx;
-            tx.send([0,0x11,0x22,0x33,0x44]).expect("Failed to send data");
-            tx.send([1,0x12,0x22,0x33,0x44]).expect("Failed to send data");
-            tx.send([2,0x13,0x22,0x33,0x44]).expect("Failed to send data");
+        byte_tx.send([1,0,0,0,0]).expect("Failed to send bytes");
+        byte_tx.send([1,0,0,0,0]).expect("Failed to send bytes");
+        byte_tx.send([2,0,0,0,0]).expect("Failed to send bytes");
 
-            vec!(
-                reading_rx.recv().expect("Failed to receive first reading"),
-                reading_rx.recv().expect("Failed to receive second reading"),
-                reading_rx.recv().expect("Failed to receive third reading"),
-            )
-        };
+        loop_iteration(&mut state, &byte_rx, &reading_tx);
+        loop_iteration(&mut state, &byte_rx, &reading_tx);
+        loop_iteration(&mut state, &byte_rx, &reading_tx);
 
-        handle.join().unwrap();
-
-        assert_eq!(received, vec!(
-            Reading{state: 0, time: 0x11223344},
-            Reading{state: 1, time: 0x12223344},
-            Reading{state: 2, time: 0x13223344},
-        ));
+        assert_eq!(reading_rx.recv().expect("Failed to receive byte"), Reading::new(1, 0));
+        assert_eq!(reading_rx.recv().expect("Failed to receive byte"), Reading::new(2, 0));
+        assert!(reading_rx.try_recv().is_err());
     }
 }
+
