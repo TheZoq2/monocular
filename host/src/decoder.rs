@@ -9,7 +9,7 @@ struct State {
 impl State {
     fn initial() -> Self {
         State {
-            last_reading: Reading::new(0, 0)
+            last_reading: Reading::new(0, 0.)
         }
     }
 
@@ -31,7 +31,7 @@ fn loop_iteration(state: &mut State, rx: &Receiver<[u8;5]>, tx: &Sender<Reading>
     let bytes = rx.recv().expect("Failed to get bytes");
     match state.update(bytes) {
         Some(reading) => {
-            println!("got reading: {:?}", reading);
+            // println!("got reading: {}", reading);
             tx.send(reading).expect("Failed to send reading");
         },
         None => {}
@@ -60,7 +60,7 @@ mod decoder_tests {
 
         assert_eq!(reading, None);
         let reading = state.update([1,0,0,0,0]);
-        assert_eq!(reading, Some(Reading::new(1, 0)));
+        assert_eq!(reading, Some(Reading::new(1, 0.)));
     }
 
     #[test]
@@ -79,8 +79,8 @@ mod decoder_tests {
         loop_iteration(&mut state, &byte_rx, &reading_tx);
         loop_iteration(&mut state, &byte_rx, &reading_tx);
 
-        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(1, 0));
-        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(2, 0));
+        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(1, 0.));
+        assert_eq!(reading_rx.try_recv().expect("Failed to receive byte"), Reading::new(2, 0.));
         assert!(reading_rx.try_recv().is_err());
     }
 }

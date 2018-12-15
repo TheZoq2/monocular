@@ -18,7 +18,7 @@ fn main() {
 
     let t1 = thread::spawn(move || spi::reader(spi, byte_tx));
     let t2 = thread::spawn(move || decoder::run(byte_rx, web_tx));
-    let t3 = thread::spawn(move || websockets::server("0.0.0.0:7878", web_rx));
+    let t3 = thread::spawn(move || websockets::server("0.0.0.0:8765", web_rx));
 
     t1.join().unwrap();
     t2.join().unwrap();
