@@ -4,6 +4,12 @@ const FREQUENCY_HZ: u32 = 16_000_000;
 const CHANNEL_AMOUNT: usize = 8;
 type ReadingState = [bool; CHANNEL_AMOUNT];
 
+#[derive(PartialEq, Debug, Serialize)]
+pub enum WebMessage {
+    Reading(Reading),
+    CurrentTime(f64)
+}
+
 fn u8_to_values(input: u8) -> ReadingState {
     [
         (input >> 7) & 1 == 1,

@@ -6,16 +6,10 @@ use serde_derive::{Serialize};
 use std::sync::mpsc::Receiver;
 
 
-use crate::types::Reading;
+use crate::types::{WebMessage, Reading};
 
 
-#[derive(Debug, Serialize)]
-pub enum WebMessage {
-    Reading(Reading),
-    CurrentTime(f64)
-}
-
-pub fn server(address: &str, reading_receiver: Receiver<Reading>) {
+pub fn server(address: &str, reading_receiver: Receiver<WebMessage>) {
     let server = Server::bind(address).expect("Failed to start websocket server");
 
     for connection in server.filter_map(Result::ok) {
@@ -23,11 +17,11 @@ pub fn server(address: &str, reading_receiver: Receiver<Reading>) {
 
         println!("Got new client");
         loop {
-            let reading = reading_receiver.recv()
+            let message = reading_receiver.recv()
                 .expect("Reading->Websocket sender disconnected");
 
             let message = OwnedMessage::Text(
-                serde_json::to_string(&WebMessage::Reading(reading))
+                serde_json::to_string(&message)
                     .expect("Failed to encode message")
             );
 
