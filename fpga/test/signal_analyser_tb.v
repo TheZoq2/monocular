@@ -34,14 +34,17 @@ module signal_analyser_tb();
         `ASSERT_EQ(dOut, 69)
         `ASSERT_EQ(newData, 1)
 
-        // Verify that the time and data hasn't changed
+        // Verify that the data hasn't changed
         #2;
-        `ASSERT_EQ(t, 0)
         `ASSERT_EQ(dOut, 69)
         `ASSERT_EQ(newData, 0)
 
+        // Verify tha time updates even if no data was changed
+        `ASSERT_EQ(t, 1)
+        #2 
+        `ASSERT_EQ(t, 2)
+
         // Set new data, verify that it is updated
-        #2;
         d = 100;
         #2;
         `ASSERT_EQ(t, 3)

@@ -110,6 +110,11 @@ module main_tb();
             end
         end
 
+
+        // Request another byte, ensure that because data has not changed, the
+        // current time is transmitted
+
+
         #10;
         `END_TEST
     end

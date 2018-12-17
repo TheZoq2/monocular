@@ -41,10 +41,7 @@ updateState (Input newData) state =
             { d = newData
             , time = (time state + 1)
             , dataTime =
-                if trans then
-                    time state
-                else
-                    dataTime state
+                time state
             , step =
                 if trans then
                     NewData
