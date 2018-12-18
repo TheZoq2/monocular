@@ -41,7 +41,7 @@ module signal_analyser_tb();
 
         // Verify tha time updates even if no data was changed
         `ASSERT_EQ(t, 1)
-        #2 
+        #2
         `ASSERT_EQ(t, 2)
 
         // Set new data, verify that it is updated

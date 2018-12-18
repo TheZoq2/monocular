@@ -113,6 +113,24 @@ module main_tb();
 
         // Request another byte, ensure that because data has not changed, the
         // current time is transmitted
+        #8
+        tx_start_time = current_time;
+
+        // This test does not care about the transmited data
+        for (i = 0; i < 8; i = i + 1) begin
+            spi_clk = 1; #4; spi_clk = 0; #4;
+        end
+        for (b = 0; b < 4; b = b + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
+                `ASSERT_EQ(miso, tx_start_time[(b+1) * 8 - i - 1]);
+                spi_clk = 1;
+                #4;
+                spi_clk = 0;
+                #4;
+            end
+        end
+
+
 
 
         #10;
