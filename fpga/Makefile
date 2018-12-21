@@ -50,7 +50,7 @@ verilog/%/built: %.hs
 sim: build_hs $(vcds)
 
 # Simulation executables
-bin/%.v.out: test/%.v $(hs_targets) $(non_test_verilogs)
+bin/%.v.out: test/%.v $(hs_targets) $(non_test_verilogs) $(test_only_hdl)
 	@echo -e "[\033[0;34miverilog\033[0m] building $@"
 	@mkdir -p bin
 	@iverilog \
