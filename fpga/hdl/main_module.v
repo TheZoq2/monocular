@@ -24,6 +24,7 @@ module main_module
 
 
     wire [39:0] data_to_send;
+    wire all_bytes_sent;
 
     DataSender ds
         ( .clk(clk)
@@ -32,6 +33,7 @@ module main_module
         , .transmission_done(spi_byte_received)
         , .dataOut(spi_tx_data)
         , .transmission_started(transmission_started)
+        , .all_bytes_sent(all_bytes_sent)
         );
 
     SignalAnalyser sa
@@ -40,6 +42,7 @@ module main_module
         , .data_in(pin_values)
         , .data_time(data_to_send[39:8])
         , .data_out(data_to_send[7:0])
+        , .data_sent(all_bytes_sent)
         );
 
 endmodule

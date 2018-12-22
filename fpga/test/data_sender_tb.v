@@ -1,4 +1,3 @@
-
 module data_sender_tb();
     `SETUP_TEST
     reg clk;
@@ -8,6 +7,7 @@ module data_sender_tb();
     reg transmission_done;
     reg [39:0] signal_to_send;
     wire [7:0] byte_to_send;
+    wire all_bytes_sent;
 
     initial begin
         $dumpfile(`VCD_OUTPUT);
@@ -104,22 +104,29 @@ module data_sender_tb();
         transmission_started = 1; #2 transmission_started = 0; #4
         signal_to_send = 'h1122334456;
         `ASSERT_EQ(byte_to_send, 'h55);
+        `ASSERT_EQ(all_bytes_sent, 0);
            transmission_done = 1; #2 transmission_done = 0; #4
         `ASSERT_EQ(byte_to_send, 'h44);
+        `ASSERT_EQ(all_bytes_sent, 0)
            transmission_started = 1; #2 transmission_started = 0; #4
         #4 transmission_done = 1; #2 transmission_done = 0; #4
         `ASSERT_EQ(byte_to_send, 'h33);
+        `ASSERT_EQ(all_bytes_sent, 0);
            transmission_started = 1; #2 transmission_started = 0; #4
         #4 transmission_done = 1; #2 transmission_done = 0; #4
         `ASSERT_EQ(byte_to_send, 'h22);
+        `ASSERT_EQ(all_bytes_sent, 0);
            transmission_started = 1; #2 transmission_started = 0; #4
         #4 transmission_done = 1; #2 transmission_done = 0; #4
         `ASSERT_EQ(byte_to_send, 'h11);
+        `ASSERT_EQ(all_bytes_sent, 0);
            transmission_started = 1; #2 transmission_started = 0; #6
            // Last byte has been sent, we now expect the first byte of the
            // next chunk to be loaded
-           transmission_done = 1; #2 transmission_done = 0; #4
-        `ASSERT_EQ(byte_to_send, 'h56)
+           transmission_done = 1; #2
+        `ASSERT_EQ(all_bytes_sent, 1);
+        transmission_done = 0; #4
+        `ASSERT_EQ(byte_to_send, 'h56);
 
         #10
 
@@ -133,7 +140,8 @@ module data_sender_tb();
         .dataIn(signal_to_send),
         .dataOut(byte_to_send),
         .transmission_done(transmission_done),
-        .transmission_started(transmission_started)
+        .transmission_started(transmission_started),
+        .all_bytes_sent(all_bytes_sent)
     );
 
 endmodule

@@ -5,7 +5,7 @@ import Clash.Explicit.Testbench
 
 
 type Input = (Unsigned 40, Bit, Bit)
-type Output = (Unsigned 8)
+type Output = (Unsigned 8, Bit)
 
 
 data Step
@@ -13,6 +13,8 @@ data Step
     = Waiting
     -- Transmiting data, `n` bytes left
     | Transmiting Int
+    -- A full cunk of data was just transmitted
+    | AllBytesSent
     deriving (Eq)
 
 
@@ -38,9 +40,14 @@ updateState (inD, transmissionDone, transmissionStart) state =
                         Transmiting 4
                     else
                         Waiting
+                AllBytesSent ->
+                    if transmissionStart == high then
+                        Transmiting 4
+                    else
+                        Waiting
                 Transmiting 0 ->
                     if transmissionDone == high then
-                        Waiting
+                        AllBytesSent
                     else
                         Transmiting 0
                 Transmiting n ->
@@ -53,6 +60,8 @@ updateState (inD, transmissionDone, transmissionStart) state =
             case step of
                 Waiting ->
                     inD
+                AllBytesSent ->
+                    inD
                 Transmiting _ ->
                     if transmissionDone == high then
                         rotateR currentD 8
@@ -62,8 +71,8 @@ updateState (inD, transmissionDone, transmissionStart) state =
         state {step = newStep, d = newD}
 
 output :: Input -> State -> Output
-output input State {d=d} =
-    (truncateB $ d :: Unsigned 8)
+output input State {d=d, step=step} =
+    (truncateB $ d :: Unsigned 8, unpack $ pack $ step == AllBytesSent)
 
 
 dataSenderT :: State -> Input -> (State, Output)
@@ -90,7 +99,10 @@ dataSender =
                     , PortName "transmission_started"
                     ]
                  ]
-    , t_output = PortName "dataOut" 
+    , t_output = PortProduct ""
+        [ PortName "dataOut"
+        , PortName "all_bytes_sent"
+        ]
     }) #-}
 topEntity
   :: Clock System Source

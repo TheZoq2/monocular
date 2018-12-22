@@ -38,14 +38,14 @@ module main_tb();
 
     initial begin
         rst=1;
-        #2;
+        @(negedge clk);
         rst=0;
-        #2;
+        @(negedge clk);
 
         // Ensure that the data on the port is sent
         pin_values = 'b1101_0010;
         tx_start_time = current_time;
-        #3
+        #4
 
         `ASSERT_EQ(miso, 1);
         spi_clk = 1; #4 spi_clk = 0; #4;
@@ -114,7 +114,7 @@ module main_tb();
         // Request another byte, ensure that because data has not changed, the
         // current time is transmitted
         #8
-        tx_start_time = current_time;
+        tx_start_time = current_time - 1;
 
         // This test does not care about the transmited data
         for (i = 0; i < 8; i = i + 1) begin

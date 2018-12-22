@@ -6,6 +6,7 @@ module signal_analyser_tb();
     wire [31:0] t;
     wire [7:0] dOut;
     wire newData;
+    reg data_sent;
 
 
     initial begin
@@ -13,7 +14,7 @@ module signal_analyser_tb();
         $dumpvars(0, signal_analyser_tb);
         clk = 0;
         d = 0;
-        #1;
+        data_sent = 0;
         forever begin
             #1 clk = ~clk;
         end
@@ -22,35 +23,41 @@ module signal_analyser_tb();
     initial begin
         // Reset signal
         rst = 1;
-        #2
+        #0 @(negedge clk)
         rst = 0;
 
-        // Set data just after reset
         d = 69;
+
+        // Set data just after reset
         // Wait for one clock cycle and verify that the time and data are
         // correct
-        #2
+        @(negedge clk)
         `ASSERT_EQ(t, 0)
         `ASSERT_EQ(dOut, 69)
         `ASSERT_EQ(newData, 1)
 
         // Verify that the data hasn't changed
-        #2;
+        @(negedge clk)
         `ASSERT_EQ(dOut, 69)
         `ASSERT_EQ(newData, 0)
 
-        // Verify tha time updates even if no data was changed
-        `ASSERT_EQ(t, 1)
-        #2
-        `ASSERT_EQ(t, 2)
+        // Verify that time does not update until a change has been sent
+        `ASSERT_EQ(t, 0)
+        data_sent = 1;
+        @(negedge clk)
+        data_sent = 0;
+        @(negedge clk)
+        `ASSERT_EQ(t, 3)
+
+        @(negedge clk)
 
         // Set new data, verify that it is updated
         d = 100;
-        #2;
-        `ASSERT_EQ(t, 3)
+        @(negedge clk)
+        `ASSERT_EQ(t, 5)
         `ASSERT_EQ(dOut, 100)
         `ASSERT_EQ(newData, 1)
-        #2;
+        @(negedge clk)
         `ASSERT_EQ(newData, 0)
 
 
@@ -65,6 +72,7 @@ module signal_analyser_tb();
         .data_in(d),
         .data_time(t),
         .data_out(dOut),
-        .new_data(newData)
+        .new_data(newData),
+        .data_sent(data_sent)
     );
 endmodule

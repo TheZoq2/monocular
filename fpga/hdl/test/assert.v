@@ -19,7 +19,7 @@
     if ((expr === cond) == 0) begin \
         __failed = 1; \
         `ASSERTION_ERROR; \
-        $display("%h /= %h", expr, cond); \
+        $display("was %h, expected %h", expr, cond); \
     end
         // `ASSERTION_ERROR \
         // ASSERTION_ERROR($write(" /= cond")) \
