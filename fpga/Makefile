@@ -76,7 +76,7 @@ build: build_hs
 # Upload to tinyfpga
 upload: build
 	@echo -e "[\033[0;34mapio\033[0m] uploading"
-	@apio upload -p ${APIO_BUILD_DIR}
+	@./upload_until_done.sh ${APIO_BUILD_DIR}
 
 u: upload
 
