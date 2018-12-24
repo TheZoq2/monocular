@@ -66,6 +66,12 @@ impl std::fmt::Display for Reading {
 }
 
 
+#[derive(Debug, Deserialize)]
+pub enum ControlMessage {
+    ActiveChannels(Vec<bool>)
+}
+
+
 #[cfg(test)]
 mod reading_tests {
     use super::*;

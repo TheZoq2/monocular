@@ -6,7 +6,7 @@ mod spi;
 use std::sync::mpsc;
 use std::thread;
 
-const SPI_FREQUENCY: u32 = 1 * 1_500_000;
+const SPI_FREQUENCY: u32 = 1 * 1_000_000;
 
 
 
