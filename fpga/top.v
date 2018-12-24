@@ -34,14 +34,14 @@ module top (
 
     wire [7:0] pin_values;
 
-    assign pin_values[0] = PIN_1;
-    assign pin_values[1] = PIN_2;
-    assign pin_values[2] = PIN_3;
-    assign pin_values[3] = PIN_4;
-    assign pin_values[4] = PIN_5;
-    assign pin_values[5] = PIN_6;
-    assign pin_values[6] = PIN_7;
-    assign pin_values[7] = PIN_8;
+    assign pin_values[7] = PIN_1;
+    assign pin_values[6] = PIN_2;
+    assign pin_values[5] = PIN_3;
+    assign pin_values[4] = PIN_4;
+    assign pin_values[3] = PIN_5;
+    assign pin_values[2] = PIN_6;
+    assign pin_values[1] = PIN_7;
+    assign pin_values[0] = PIN_8;
 
 
     main_module main
