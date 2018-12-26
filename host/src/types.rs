@@ -4,6 +4,9 @@ const FREQUENCY_HZ: u32 = 16_000_000;
 const CHANNEL_AMOUNT: usize = 8;
 type ReadingState = [bool; CHANNEL_AMOUNT];
 
+/**
+  Message that is sent between the host and the web client
+*/
 #[derive(PartialEq, Debug, Serialize)]
 pub enum WebMessage {
     Reading(Reading),
@@ -23,6 +26,10 @@ fn u8_to_values(input: u8) -> ReadingState {
     ]
 }
 
+
+/**
+  A reading of the current state which is read from the fpga hardware
+*/
 #[derive(PartialEq, Debug, Serialize, Deserialize, Clone)]
 pub struct Reading {
     pub values: ReadingState,
@@ -66,9 +73,35 @@ impl std::fmt::Display for Reading {
 }
 
 
+/**
+  A message that is sent from the web client to control the reader
+*/
 #[derive(Debug, Deserialize)]
 pub enum ControlMessage {
-    ActiveChannels(Vec<bool>)
+    ActiveChannels([bool;CHANNEL_AMOUNT])
+}
+
+impl ControlMessage {
+    pub fn encode_for_spi(&self) -> [u8;5] {
+        let mut result = [0;5];
+
+        match *self {
+            ControlMessage::ActiveChannels(channels) => {
+                result[0] = 1;
+                result[1] =
+                        (channels[7] as u8) +
+                        ((channels[6] as u8) << 1) +
+                        ((channels[5] as u8) << 2) +
+                        ((channels[4] as u8) << 3) +
+                        ((channels[3] as u8) << 4) +
+                        ((channels[2] as u8) << 5) +
+                        ((channels[1] as u8) << 6) +
+                        ((channels[0] as u8) << 7)
+            }
+        }
+
+        result
+    }
 }
 
 
@@ -118,5 +151,20 @@ mod reading_tests {
         let reading = Reading::from([values, 0, 0x24, 0xf4, 0]);
 
         assert_eq!(reading.time, expected);
+    }
+}
+
+#[cfg(test)]
+mod control_message_tests {
+    use super::*;
+
+    #[test]
+    fn encoding_active_channels_works() {
+        let message = ControlMessage::ActiveChannels(
+            [true, true, false, true, false, false, true, false]
+        );
+        let expected = [1, 0b11010010, 0, 0, 0];
+
+        assert_eq!(message.encode_for_spi(), expected);
     }
 }

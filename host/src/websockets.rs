@@ -2,12 +2,16 @@ use websocket::sync::{Server};
 use websocket::message::OwnedMessage;
 use serde_json;
 
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Sender, Receiver};
 
 use crate::types::{WebMessage, ControlMessage};
 
 
-pub fn server(address: &str, reading_receiver: Receiver<WebMessage>) {
+pub fn server(
+    address: &str,
+    reading_receiver: Receiver<WebMessage>,
+    control_sender: Sender<ControlMessage>
+) {
     let server = Server::bind(address).expect("Failed to start websocket server");
 
     for connection in server.filter_map(Result::ok) {
@@ -42,6 +46,8 @@ pub fn server(address: &str, reading_receiver: Receiver<WebMessage>) {
                 };
 
                 println!("Got message: {:?}", decoded);
+                control_sender.send(decoded)
+                    .expect("Failed to send control message, did the receiver disconnect?");
             }
 
         }
