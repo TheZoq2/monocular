@@ -32,6 +32,7 @@ initialState = State
 data Input a = Input
     { newData :: a
     , dataSent :: Bit
+    , newDataMask :: a
     }
 
 
@@ -42,13 +43,13 @@ isNewData old new =
 
 
 
-updateState :: Eq a => Input a -> State a -> State a
-updateState (Input newData dataSent) state =
+updateState :: (Bits a, Eq a) => Input a -> State a -> State a
+updateState (Input newData dataSent dataMask) state =
     let
         isUpdated = isNewData newData (d state)
     in
         state
-            { d = newData
+            { d = newData .&. dataMask
             , time = (time state + 1)
             , dataTime =
                 if changeIsSent state || isUpdated then
@@ -72,15 +73,15 @@ updateState (Input newData dataSent) state =
 
 
 output :: Eq a => Input a -> State a -> (Unsigned 32, a, Bit)
-output (Input newData _) State {d=d, dataTime=dataTime, step=step} =
+output (Input newData _ _) State {d=d, dataTime=dataTime, step=step} =
     (dataTime, d, unpack $ pack (step == NewData))
 
 
 
-signalAnalyserT :: Eq a => State a -> (a, Bit) -> (State a, (Unsigned 32, a, Bit))
+signalAnalyserT :: (Eq a, Bits a) => State a -> Input a -> (State a, (Unsigned 32, a, Bit))
 signalAnalyserT state input =
-    ( updateState (uncurry Input input) state
-    , output (uncurry Input input) state
+    ( updateState input state
+    , output input state
     )
 
 
@@ -98,9 +99,10 @@ signalAnalyser =
     , t_inputs = [ PortName "clk"
                  , PortName "rst"
                  , PortProduct ""
-                    [ PortName "data_in"
-                    , PortName "data_sent"
-                    ]
+                     [ PortName "data_in"
+                     , PortName "data_sent"
+                     , PortName "channel_mask"
+                     ]
                  ]
     , t_output = PortProduct ""
         [ PortName "data_time"
@@ -111,7 +113,7 @@ signalAnalyser =
 topEntity
   :: Clock System Source
   -> Reset System Asynchronous
-  -> Signal System (Unsigned 8, Bit)
+  -> Signal System (Input (Unsigned 8))
   -> Signal System (Unsigned 32, Unsigned 8, Bit)
 topEntity = exposeClockReset signalAnalyser
 

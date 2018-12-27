@@ -2,6 +2,7 @@ module signal_analyser_tb();
     `SETUP_TEST
     reg clk;
     reg rst;
+    reg [7:0] mask;
     reg [7:0] d;
     wire [31:0] t;
     wire [7:0] dOut;
@@ -15,6 +16,7 @@ module signal_analyser_tb();
         clk = 0;
         d = 0;
         data_sent = 0;
+        mask = 'hff;
         forever begin
             #1 clk = ~clk;
         end
@@ -61,6 +63,13 @@ module signal_analyser_tb();
         `ASSERT_EQ(newData, 0)
 
 
+        // Add a mask and ensure that the masked bytes are now set to 0
+        mask = 'b11110000;
+        d = 'b11010010;
+        @(negedge clk)
+        `ASSERT_EQ(dOut, 'b11010000)
+
+
         #3;
 
         `END_TEST
@@ -73,6 +82,7 @@ module signal_analyser_tb();
         .data_time(t),
         .data_out(dOut),
         .new_data(newData),
-        .data_sent(data_sent)
+        .data_sent(data_sent),
+        .channel_mask(mask)
     );
 endmodule
