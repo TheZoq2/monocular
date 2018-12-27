@@ -1,7 +1,7 @@
 use serde_derive::{Serialize, Deserialize};
 
 const FREQUENCY_HZ: u32 = 16_000_000;
-const CHANNEL_AMOUNT: usize = 8;
+pub const CHANNEL_AMOUNT: usize = 8;
 type ReadingState = [bool; CHANNEL_AMOUNT];
 
 /**
@@ -13,7 +13,7 @@ pub enum WebMessage {
     CurrentTime(f64)
 }
 
-fn u8_to_values(input: u8) -> ReadingState {
+pub fn u8_to_values(input: u8) -> ReadingState {
     [
         (input >> 7) & 1 == 1,
         (input >> 6) & 1 == 1,
@@ -24,6 +24,17 @@ fn u8_to_values(input: u8) -> ReadingState {
         (input >> 1) & 1 == 1,
         input & 1 == 1
     ]
+}
+
+pub fn values_to_u8(input: ReadingState) -> u8 {
+    (input[7] as u8) +
+    ((input[6] as u8) << 1) +
+    ((input[5] as u8) << 2) +
+    ((input[4] as u8) << 3) +
+    ((input[3] as u8) << 4) +
+    ((input[2] as u8) << 5) +
+    ((input[1] as u8) << 6) +
+    ((input[0] as u8) << 7)
 }
 
 
@@ -81,29 +92,6 @@ pub enum ControlMessage {
     ActiveChannels([bool;CHANNEL_AMOUNT])
 }
 
-impl ControlMessage {
-    pub fn encode_for_spi(&self) -> [u8;5] {
-        let mut result = [0;5];
-
-        match *self {
-            ControlMessage::ActiveChannels(channels) => {
-                result[0] = 1;
-                result[1] =
-                        (channels[7] as u8) +
-                        ((channels[6] as u8) << 1) +
-                        ((channels[5] as u8) << 2) +
-                        ((channels[4] as u8) << 3) +
-                        ((channels[3] as u8) << 4) +
-                        ((channels[2] as u8) << 5) +
-                        ((channels[1] as u8) << 6) +
-                        ((channels[0] as u8) << 7)
-            }
-        }
-
-        result
-    }
-}
-
 
 #[cfg(test)]
 mod reading_tests {
@@ -152,19 +140,10 @@ mod reading_tests {
 
         assert_eq!(reading.time, expected);
     }
-}
 
-#[cfg(test)]
-mod control_message_tests {
-    use super::*;
 
     #[test]
-    fn encoding_active_channels_works() {
-        let message = ControlMessage::ActiveChannels(
-            [true, true, false, true, false, false, true, false]
-        );
-        let expected = [1, 0b11010010, 0, 0, 0];
-
-        assert_eq!(message.encode_for_spi(), expected);
+    fn values_to_u8_works() {
+        assert_eq!(values_to_u8(u8_to_values(0b11010010)), 0b11010010);
     }
 }

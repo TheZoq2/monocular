@@ -17,8 +17,8 @@ fn main() {
     let (web_tx, web_rx) = mpsc::channel();
     let (control_tx, control_rx) = mpsc::channel();
 
-    let t1 = thread::spawn(move || spi::reader(spi, byte_tx, control_rx));
-    let t2 = thread::spawn(move || decoder::run(byte_rx, web_tx));
+    let t1 = thread::spawn(move || spi::reader(spi, byte_tx));
+    let t2 = thread::spawn(move || decoder::run(byte_rx, web_tx, control_rx));
     let t3 = thread::spawn(move || websockets::server("0.0.0.0:8765", web_rx, control_tx));
 
     t1.join().unwrap();

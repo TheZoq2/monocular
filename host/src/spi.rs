@@ -1,7 +1,7 @@
 use std::io::{
     self,
 };
-use std::sync::mpsc::{Receiver, Sender, TryRecvError};
+use std::sync::mpsc::{Sender};
 
 use spidev::{
     Spidev,
@@ -9,8 +9,6 @@ use spidev::{
     SpidevTransfer,
     SPI_MODE_0
 };
-
-use crate::types::ControlMessage;
 
 
 pub fn create_spi(frequency_hz: u32) -> io::Result<Spidev> {
@@ -34,21 +32,9 @@ pub fn transfer_data(spi: &mut Spidev, data: [u8; BYTE_AMOUNT]) -> io::Result<[u
     Ok(rxbuf)
 }
 
-pub fn reader(mut spi: Spidev, tx: Sender<[u8;5]>, control_rx: Receiver<ControlMessage>) {
+pub fn reader(mut spi: Spidev, tx: Sender<[u8;5]>) {
     loop {
-        let control_message = control_rx.try_recv();
-
-        let to_transmit = match control_message {
-            Ok(msg) => {
-                msg.encode_for_spi()
-            }
-            Err(TryRecvError::Empty) => {[0;5]}
-            Err(e) => {
-                panic!("Failed to read control message {}", e);
-            }
-        };
-
-        tx.send(transfer_data(&mut spi, to_transmit).expect("Failed to read bytes from SPI"))
+        tx.send(transfer_data(&mut spi, [0; 5]).expect("Failed to read bytes from SPI"))
             .expect("Failed to send bytes");
     }
 }
